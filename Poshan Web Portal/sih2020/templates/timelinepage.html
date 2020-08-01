@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:400,900&display=swap" rel="stylesheet" />
+    <title>TimeLine Gen</title>
+    <style>
+        *,
+*::after,
+*::before {
+  box-sizing: border-box;
+  margin: 0;
+}
+html,
+body {
+  height: 100%;
+  width: 100%;
+  margin: 0;
+  font-family: "Source Sans Pro", sans-serif;
+}
+html {
+  font-size: 5vmin;
+}
+body {
+  background: #fff;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.timeline-container {
+  position: relative;
+  width: 20rem;
+}
+
+.timeline-container::after {
+  content: "";
+  position: absolute;
+  width: 0.2rem;
+  background-color: #f5f5f5;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+}
+
+.text-wrapper {
+  padding: 0 1rem;
+  position: relative;
+  background-color: inherit;
+  width: 50%;
+  margin: 1.4rem 0;
+}
+.text-wrapper::after {
+  content: "";
+  position: absolute;
+  width: 0.6rem;
+  height: 0.6rem;
+  right: -0.4rem;
+  background-color: #0a6ebd;
+  top: 15px;
+  border-radius: 50%;
+  z-index: 1;
+}
+.left {
+  left: 0;
+}
+
+.right {
+  left: 50%;
+}
+
+.right::after {
+  left: -0.2rem;
+}
+
+.text {
+  padding: 0.5rem;
+  background-color: #f5f5f5;
+  box-shadow: 0 1.9px 1.9px -14px rgba(0, 0, 0, 0.035),
+    0 15px 15px -14px rgba(0, 0, 0, 0.07);
+  border-radius: 0.3rem;
+}
+.text h3 {
+  text-transform: uppercase;
+  font-size: 0.4rem;
+  color: #212121;
+  letter-spacing: 1px;
+}
+
+.text p {
+  color: #616161;
+  font-weight: 300;
+  font-size: 0.6rem;
+  margin-top: 2px;
+}
+
+    </style>
+    
+</head>
+
+<body>
+  	
+    
+    <h1 style="  padding: 60px;
+    text-align: center;
+    background: #0a6ebd;
+    color: white;
+    font-size: 30px;"><a href="{% url 'workerDash' %}" style=" color: white;">Dashboard</a></h1>
+<br>
+    <div class="timeline-container">
+        {% for data in rows %}
+      <div class="left text-wrapper">
+        <div class="text">
+          <h3>Date:{{data.apdate}}</h3>
+          <p>No: {{data.apno}}</p>
+          <p>Status: {{data.apstatus}}</p>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+
+   
+</body>
+
+</html>

@@ -1,0 +1,76 @@
+<resources>
+    <string name="app_name">Poshan</string>
+    <string-array name="faqquestions">
+        <item>What is Malnutrition?</item>
+        <item>Is malnutrition a disease?</item>
+        <item>Symptoms of Malnutrition in Childrens</item>
+        <item>Symptoms of Malnutrition in Adults</item>
+        <item>Causes of Malnutrition</item>
+        <item>Preventing Malnutrition</item>
+        <item>Treating Malnutrition</item>
+
+    </string-array>
+    <string-array name="faq1">
+        <item>What is Malnutrition?</item>
+        <item>Malnutrition is a serious condition that occurs when a person\’s diet doesn\'t contain the right amount of nutrients.</item>
+    </string-array>
+    <string-array name="faq2">
+        <item>Is malnutrition a disease?</item>
+        <item>Malnutrition is not a disease it occurs when a person’s diet does not provide enough nutrients or the right balance of nutrients for optimal health.If a person does not get the right balance of nutrients, they can also have malnutrition. It is possible to have obesity with malnutrition.</item>
+    </string-array>
+    <string-array name="faq3">
+        <item>Symptoms of Malnutrition in Childrens</item>
+        <item> • not growing or putting on weight at the expected rate (faltering growth)\n • changes in behaviour, such as being unusually irritable, slow or anxious \n • low energy levels and tiring more easily than other children</item>
+    </string-array>
+    <string-array name="faq4">
+        <item>Symptoms of Malnutrition in Adults</item>
+        <item>symptoms of malnutrition include:\n • the most common symptom of undernutrition is unintentional weight loss (losing 5–10% or more of your body weight over three to six months).\n • lack of appetite or interest in food or drink \n • tiredness and irritability \n • an inability to concentrate \n • always feeling cold </item>
+    </string-array>
+    <string-array name="faq5">
+        <item>Causes of Malnutrition</item>
+        <item>Malnutrition is caused by a lack of nutrients in your diet.This is either due to an inadequate diet or problems absorbing nutrients from food. \n Medical conditions that can lead to malnutrition include: \n • a condition that causes a lack of appetite, such as cancer, liver disease, persistent pain or nausea \n • a mental health condition such as depression or schizophrenia, which may affect your ability to look after yourself \n • dementia – people with dementia may be unable to communicate their needs when it comes to eating \n • dysphagia – a condition that makes swallowing difficult or painful  </item>
+    </string-array>
+    <string-array name="faq6">
+        <item>Preventing Malnutrition</item>
+        <item>The best way to ensure you get the correct amount of nutrients is to eat a healthy, balanced diet.A healthy, balanced diet contains foods from all the major food groups.\n The four main food groups are: \n • fruit and vegetables – at least 5 a day \n • bread, rice, potatoes, pasta, cereals and other starchy foods \n • milk and dairy foods – such as cheese and yoghurt \n • meat, fish, eggs, beans, nuts, and other non-dairy sources of protein.</item>
+    </string-array>
+    <string-array name="faq7">
+        <item>Treating Malnutrition</item>
+        <item>• Treatment at home \n If you\'re treated under supervision at home, the healthcare professional helping you will discuss with you changes you should make to your diet. \n Your dietary plans will depend on your individual circumstances, but it\'s likely you\'ll be advised to gradually increase your intake of energy (calories), protein, carbohydrates, fluids, and vitamins and minerals. The aim is to reduce your risk of developing complications, such as infections, and to avoid hospital admission. \n You may also be advised to take special nutritional supplements which can increase your energy and protein intake. You\'ll be helped to set targets and your progress will be regularly monitored. \n • Treatment in hospital \n You\'ll be seen by a number of healthcare professionals if you\'re admitted to hospital with malnutrition.
+            They may include: \n • a doctor who specialises in treating digestive conditions (a gastroenterologist) \n • a dietitian \n • a nurse who specialises in nutrition \n • a social worker  </item>
+
+    </string-array>
+
+
+    <string name="faq1txt">
+       What is Malnutrition?
+        Malnutrition is a serious condition that occurs when a person\’s diet doesn\'t contain the right amount of nutrients.
+    </string>
+    <string name="faq2txt">
+       Is malnutrition a disease?
+        Malnutrition is not a disease it occurs when a person’s diet does not provide enough nutrients or the right balance of nutrients for optimal health.If a person does not get the right balance of nutrients, they can also have malnutrition. It is possible to have obesity with malnutrition.
+    </string>
+    <string name="faq3txt">
+        Symptoms of Malnutrition in Childrens
+         • not growing or putting on weight at the expected rate (faltering growth)\n • changes in behaviour, such as being unusually irritable, slow or anxious \n • low energy levels and tiring more easily than other children
+    </string>
+    <string name="faq4txt">
+        Symptoms of Malnutrition in Adults
+        symptoms of malnutrition include:\n • the most common symptom of undernutrition is unintentional weight loss (losing 5–10% or more of your body weight over three to six months).\n • lack of appetite or interest in food or drink \n • tiredness and irritability \n • an inability to concentrate \n • always feeling cold 
+    </string>
+    <string name="faq5txt">
+        Causes of Malnutrition
+       Malnutrition is caused by a lack of nutrients in your diet.This is either due to an inadequate diet or problems absorbing nutrients from food. \n Medical conditions that can lead to malnutrition include: \n • a condition that causes a lack of appetite, such as cancer, liver disease, persistent pain or nausea \n • a mental health condition such as depression or schizophrenia, which may affect your ability to look after yourself \n • dementia – people with dementia may be unable to communicate their needs when it comes to eating \n • dysphagia – a condition that makes swallowing difficult or painful  
+    </string>
+    <string name="faq6txt">
+       Preventing Malnutrition
+        The best way to ensure you get the correct amount of nutrients is to eat a healthy, balanced diet.A healthy, balanced diet contains foods from all the major food groups.\n The four main food groups are: \n • fruit and vegetables – at least 5 a day \n • bread, rice, potatoes, pasta, cereals and other starchy foods \n • milk and dairy foods – such as cheese and yoghurt \n • meat, fish, eggs, beans, nuts, and other non-dairy sources of protein.
+    </string>
+    <string name="faq7txt">
+        Treating Malnutrition
+        • Treatment at home \n If you\'re treated under supervision at home, the healthcare professional helping you will discuss with you changes you should make to your diet. \n Your dietary plans will depend on your individual circumstances, but it\'s likely you\'ll be advised to gradually increase your intake of energy (calories), protein, carbohydrates, fluids, and vitamins and minerals. The aim is to reduce your risk of developing complications, such as infections, and to avoid hospital admission. \n You may also be advised to take special nutritional supplements which can increase your energy and protein intake. You\'ll be helped to set targets and your progress will be regularly monitored. \n • Treatment in hospital \n You\'ll be seen by a number of healthcare professionals if you\'re admitted to hospital with malnutrition.
+            They may include: \n • a doctor who specialises in treating digestive conditions (a gastroenterologist) \n • a dietitian \n • a nurse who specialises in nutrition \n • a social worker  
+
+    </string>
+
+</resources>

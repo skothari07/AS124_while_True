@@ -229,3 +229,18 @@ def gentimeline1(request):
         cursor.execute("INSERT INTO beneficiary_userappointments(u_user_id,apdate,apref,apassign,apPincode,aptype,apstatus,apPhone) VALUES( %s , %s ,%s,%s,%s,%s,%s,%s)", [id, datez,a,assign,pincode,aptype,apstatus,phone])
         return HttpResponseRedirect(reverse('workerDash'))
    
+def absent(request):
+    
+    form = userappointments.objects.all()
+    
+    hwno = request.session.get('hw_pincode')
+    ver = form.filter(apdate=date.today(),apPincode = hwno ).order_by('apdate')
+   
+    datez=date.today()-timedelta(days=1)
+    date1= date.today()- timedelta(days=7)
+
+    notver = userappointments.objects.filter(apdate__range=(date1,datez),apPincode = hwno,apstatus=False ).order_by('apdate')
+
+    #notver = form1.filter(apdate=date.month())
+    context = {'form':form,'notver':notver}
+    return render(request,"absent.html",context)

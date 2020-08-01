@@ -46,6 +46,7 @@ DATA_PATH = PATH.joinpath("data").resolve()'''
 #dataframe
 df = pd.read_csv('sample_data.csv')
 ap = pd.read_csv('small_dataset.csv')
+op = pd.read_csv("sampdata.csv")
 
 ######################### Start Dash ################################################
 app = dash.Dash(
@@ -197,6 +198,15 @@ app.layout = html.Div(children=[
 	    )],style={'width': '100%','margin': '10px 5% 10px 5%'}),
 	    html.Div([dcc.Graph(id='boxplot-status'),dcc.Interval(id="update-boxplot-status",interval=10000)],style={'margin': '2% 5% 0px 10%'}),
 	    html.Div([dcc.Graph(id='bmi-count'),dcc.Interval(id="update-bmi-count",interval=10000)],style={'margin': '2% 5% 0px 5%'}),
+	    html.Div([dcc.Graph(id='pie-bmi-women'),dcc.Interval(id="update-pie-bmi-women",interval=10000)],style={'margin': '2% 5% 0px 10%'}),
+	    html.Div([dcc.Graph(id='pie-bmi-child1'),dcc.Interval(id="update-pie-bmi-child1",interval=10000)],style={'margin': '2% 5% 0px 5%'}),
+	    html.Div([dcc.Graph(id='pie-bmi-child2'),dcc.Interval(id="update-pie-bmi-child2",interval=10000)],style={'margin': '2% 5% 0px 10%'}),
+	    html.Div([dcc.Graph(id='comparison-women'),dcc.Interval(id="update-comparison-women",interval=10000)],style={'margin': '2% 5% 0px 5%'}),
+	    html.Div([dcc.Graph(id='comparison-child1'),dcc.Interval(id="update-comparison-child1",interval=10000)],style={'margin': '2% 5% 0px 10%'}),
+	    html.Div([dcc.Graph(id='comparison-child2'),dcc.Interval(id="update-comparison-child2",interval=10000)],style={'margin': '2% 5% 0px 5%'}),
+	    html.Div([dcc.Graph(id='comparison'),dcc.Interval(id="update-comparison",interval=10000)],style={'margin': '2% 5% 0px 5%'}),
+	    html.Div([dcc.Graph(id='comparison1'),dcc.Interval(id="update-comparison1",interval=10000)],style={'margin': '2% 5% 0px 5%'}),
+	    html.Div([dcc.Graph(id='comparison2'),dcc.Interval(id="update-comparison2",interval=10000)],style={'margin': '2% 5% 0px 5%'}),
 	   
 		
 ],style={'display': 'flex','flex-direction': 'row','flex-wrap': 'wrap','overflow': 'hidden'})
@@ -254,14 +264,6 @@ def update_figure(n_intervals):
     fig3.update_layout(transition_duration=500)
     return fig3
 
-# Histogram of count for different BMI levels   
-@app.callback(
-    Output('bmi-count', 'figure'),
-    [Input('update-bmi-count', 'n_intervals')])
-def update_figure(n_intervals):
-    fig3 = px.histogram(df, x="bmi", color="status", title="Histogram of count for different BMI levels")
-    fig3.update_layout(transition_duration=500)
-    return fig3
 
 # For percentage of women in different BMI categories
 @app.callback(
@@ -403,6 +405,43 @@ def update_figure(n_intervals):
     fig9.update_layout(title_text='Comparison of BMI values of Children (4-6) before and after dosage', yaxis_title_text='Count', barmode='group')
     fig9.update_layout(transition_duration=500)
     return fig9   
+    
+    
+# Histogram for percentage of beneficiaries in different BMI categories who belong to below poverty line class
+@app.callback(
+    Output('comparison', 'figure'),
+    [Input('update-comparison', 'n_intervals')])
+def update_figure(n_intervals):   
+    
+    standard_bmii = op[(op.currentbmi >= 18.25) & (op.currentbmi <= 25) & (op.u_ration == "Yellow")]
+    severely_thinn = op[(op.currentbmi < 16) & (op.u_ration == "Yellow")]
+    moderately_thinn = op[(op.currentbmi >= 16) & (op.currentbmi < 18.5) & (op.u_ration == "Yellow")]
+    op1 = {'bmi_class':['standard_bmi', 'severely_thin', 'moderately_thin'],
+       'count':[len(standard_bmii), len(severely_thinn), len(moderately_thinn)]}
+    op1 = pd.DataFrame(op1,columns=['bmi_class','count'])
+    op1['percentage'] = (op1['count']/op1['count'].sum()) * 100
+    print(op1)    
+    fig11 = px.pie(op1, values='percentage', names='bmi_class', title='Histogram for percentage of beneficiaries in different BMI categories who belong to below poverty line class')
+    fig11.update_layout(transition_duration=500)
+    return fig11
+    
+# Histogram for percentage of beneficiaries in different BMI categories whose annual income falls under 15,000 rs. to 1 lakh rs.    
+@app.callback(
+    Output('comparison1', 'figure'),
+    [Input('update-comparison1', 'n_intervals')])
+def update_figure(n_intervals): 
+    sstandard_bmi = op[(op.currentbmi >= 18.25) & (op.currentbmi <= 25) & (op.u_ration == "Orange")]
+    sseverely_thin = op[(op.currentbmi < 16) & (op.u_ration == "Orange")]
+    mmoderately_thin = op[(op.currentbmi >= 16) & (op.currentbmi < 18.5) & (op.u_ration == "Orange")]
+    op1 = {'bmi_class':['standard_bmi', 'severely_thin', 'moderately_thin'],
+       'count':[len(sstandard_bmi), len(sseverely_thin), len(mmoderately_thin)]}
+    op1 = pd.DataFrame(op1,columns=['bmi_class','count'])
+    op1['percentage'] = (op1['count']/op1['count'].sum()) * 100
+    print(op1)
+    fig12 = px.pie(op1,  values="percentage",names="bmi_class", title='Beneficiaries in different BMI categories whose annual income falls under 15,000 rs. to 1 lakh rs.')
+    return fig12 
+    
+    
 
 
 #Dash Table

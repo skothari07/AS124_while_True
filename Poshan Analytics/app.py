@@ -145,6 +145,31 @@ app.layout = html.Div(children=[
                         
                     ])]),dcc.Interval(id="update-counter",interval=10000),
 		],style={'width':'10%','margin': '10px 10px 0px 0px'}),
+		html.Div( children = [
+	    	html.Label('Select Education:'),
+	    	dcc.Dropdown(id = 'dropdown-edu',
+		    options=[
+			{'label': '10th Pass', 'value': '10th Pass'},
+			{'label': '12th Pass', 'value': '12th Pass'},
+			{'label': 'Graduate' , 'value': 'Graduate'},
+			{'label':'Below 10th', 'value': 'Below 10th'}
+		    ],
+		    multi=False,
+		    value=""
+		)],style={'width': '45%','margin': '2% 5px 0px 2%'}
+		),
+		html.Div( children = [
+	    	html.Label('Select Financial status:'),
+	    	dcc.Dropdown(id = 'dropdown-financial',
+		    options=[
+			{'label': 'below poverty line', 'value': 'Yellow'},
+			{'label': 'annual income Rs.15,000 to Rs.1 Lakh', 'value': 'Orange'},
+			{'label': 'annual income over Rs.1 Lakh', 'value': 'White'}
+		    ],
+		    multi=False,
+		    value=""
+		)],style={'width': '45%','margin': '2% 5px 0px 2%'}
+		),
 		
 		html.Div( children = [
 		dcc.Graph(id='map'),
@@ -228,6 +253,156 @@ def update_figure(n_intervals):
     fig3 = px.histogram(df, x="bmi", color="status", title="Histogram of count for different BMI levels")
     fig3.update_layout(transition_duration=500)
     return fig3
+
+# Histogram of count for different BMI levels   
+@app.callback(
+    Output('bmi-count', 'figure'),
+    [Input('update-bmi-count', 'n_intervals')])
+def update_figure(n_intervals):
+    fig3 = px.histogram(df, x="bmi", color="status", title="Histogram of count for different BMI levels")
+    fig3.update_layout(transition_duration=500)
+    return fig3
+
+# For percentage of women in different BMI categories
+@app.callback(
+    Output('pie-bmi-women', 'figure'),
+    [Input('update-pie-bmi-women', 'n_intervals')])
+def update_figure(n_intervals):
+    standard_bmi = df[(df.bmi >= 18.25) & (df.bmi <= 25) & (df.age >= 18)]
+    severely_thin = df[(df.bmi < 16) & (df.age >= 18)]
+    moderately_thin = df[(df.bmi >= 16) & (df.bmi < 18.5) & (df.age >= 18)]
+    overweight = df[(df.bmi > 25) & (df.age >= 18)]
+    df1 = {'bmi_class':['standard_bmi', 'severely_thin', 'moderately_thin', 'overweight'],
+       'count':[len(standard_bmi), len(severely_thin), len(moderately_thin), len(overweight)]}
+    df1 = pd.DataFrame(df1,columns=['bmi_class','count'])
+    df1['percentage'] = (df1['count']/df1['count'].sum()) * 100
+    fig4 = px.pie(df1, values='percentage', names='bmi_class', title='Percentage of Women in different BMI Categories')
+
+    fig4.update_layout(transition_duration=500)
+    return fig4
+    
+# For percentage of Children (0-3 yrs) in different BMI categories
+@app.callback(
+    Output('pie-bmi-child1', 'figure'),
+    [Input('update-pie-bmi-child1', 'n_intervals')])
+def update_figure(n_intervals):
+    standardbmi = df[(df.bmi >= 12) & (df.bmi <= 15) & (df.age <= 3)]
+    severelythin = df[(df.bmi <= 7) & (df.age <= 3)]
+    moderatelythin = df[(df.bmi > 7) & (df.bmi < 12) & (df.age <= 3)]
+    Overweight = df[(df.bmi > 15) & (df.age <= 3)]
+    df2 = {'bmi_class':['standardbmi', 'severelythin', 'moderatelythin', 'Overweight'],
+       'count':[len(standardbmi), len(severelythin), len(moderatelythin), len(Overweight)]}
+    df2 = pd.DataFrame(df2,columns=['bmi_class','count'])
+    df2['percentage'] = (df2['count']/df2['count'].sum()) * 100
+    fig5 = px.pie(df2, values='percentage', names='bmi_class', title='Percentage of Children (0-3 yrs) in different BMI Categories')
+    fig5.update_layout(transition_duration=500)
+    return fig5
+    
+    
+# For percentage of Children (4-6 yrs) in different BMI categories  
+@app.callback(
+    Output('pie-bmi-child2', 'figure'),
+    [Input('update-pie-bmi-child2', 'n_intervals')])
+def update_figure(n_intervals):
+    standardBMI = df[(df.bmi >= 13.5) & (df.bmi <= 16.5) & (df.age > 3) & (df.age <= 6)] # For percentage of Children (4-6 yrs) in different BMI categories
+    SeverelyThin = df[(df.bmi >= 7) & (df.bmi <= 8) & (df.age > 3) & (df.age <= 6)]
+    ModeratelyThin = df[(df.bmi > 8) & (df.bmi < 13.5) & (df.age > 3) & (df.age <= 6)]
+    OverWeight = df[(df.bmi > 16.5) & (df.age > 3) & (df.age <= 6)]
+    df3 = {'bmi_class':['standardBMI', 'SeverelyThin', 'ModeratelyThin', 'OverWeight'],
+       'count':[len(standardBMI), len(SeverelyThin), len(ModeratelyThin), len(OverWeight)]}
+    df3 = pd.DataFrame(df3,columns=['bmi_class','count'])
+    df3['percentage'] = (df3['count']/df3['count'].sum()) * 100
+    fig6 = px.pie(df3, values='percentage', names='bmi_class', title='Percentage of Children (4-6 yrs) in different BMI Categories')
+    fig6.update_layout(transition_duration=500)
+    return fig6
+    
+    
+# For comparison of BMI values of women before and after dosage
+@app.callback(
+    Output('comparison-women', 'figure'),
+    [Input('update-comparison-women', 'n_intervals')])
+def update_figure(n_intervals):
+    standard_bmi1 = ap[(ap.bmi1 >= 18.25) & (ap.bmi1 <= 25) & (ap.age >= 18)]
+    x = len(standard_bmi1)
+    severely_thin1 = ap[(ap.bmi1 < 16) & (ap.age >= 18)]
+    y = len(severely_thin1)
+    moderately_thin1 = ap[(ap.bmi1 >= 16) & (ap.bmi1 < 18.5) & (ap.age >= 18)]
+    z = len(moderately_thin1)
+    overweight1 = ap[(ap.bmi1 > 25) & (ap.age >= 18)]
+    standard_bmi2 = ap[(ap.bmi2 >= 18.25) & (ap.bmi2 <= 25) & (ap.age >= 18)]
+    x1 = len(standard_bmi2)
+    severely_thin2 = ap[(ap.bmi2 < 16) & (ap.age >= 18)]
+    y1 = len(severely_thin2)
+    moderately_thin2 = ap[(ap.bmi2 >= 16) & (ap.bmi2 < 18.5) & (ap.age >= 18)]
+    z1 = len(moderately_thin2)
+    overweight2 = ap[(ap.bmi2 > 25) & (ap.age >= 18)]
+    bmiclass=['standard_bmi', 'severely_thin', 'moderately_thin']
+
+    fig7 = go.Figure(data=[
+        go.Bar(name='after_1_appt', x=bmiclass, y=[x, y, z]),
+        go.Bar(name='after_2_appt', x=bmiclass, y=[x1, y1, z1])
+    ])
+    fig7.update_layout(title_text='Comparison of BMI values of women before and after dosage', yaxis_title_text='Count', barmode='group')
+    fig7.update_layout(transition_duration=500)
+    return fig7
+    
+
+# For comparison of BMI values of Children (0-3) before and after dosage
+@app.callback(
+    Output('comparison-child1', 'figure'),
+    [Input('update-comparison-child1', 'n_intervals')])
+def update_figure(n_intervals):
+    standardbmi1 = ap[(ap.bmi1 >= 12) & (ap.bmi1 <= 15) & (ap.age <= 3)]
+    g = len(standardbmi1)
+    severelythin1 = ap[(ap.bmi1 <= 7) & (ap.age <= 3)]
+    h = len(severelythin1)
+    moderatelythin1 = ap[(ap.bmi1 > 7) & (ap.bmi1 < 12) & (ap.age <= 3)]
+    j = len(moderatelythin1)
+    standardbmi2 = ap[(ap.bmi2 >= 12) & (ap.bmi2 <= 15) & (ap.age <= 3)]
+    G = len(standardbmi2)
+    severelythin2 = ap[(ap.bmi2 <= 7) & (ap.age <= 3)]
+    H = len(severelythin2)
+    moderatelythin2 = ap[(ap.bmi2 > 7) & (ap.bmi2 < 12) & (ap.age <= 3)]
+    J = len(moderatelythin2)
+    bmiclass=['standard_bmi', 'severely_thin', 'moderately_thin']
+
+    fig8 = go.Figure(data=[
+        go.Bar(name='after_1_appt', x=bmiclass, y=[g, h, j]),
+        go.Bar(name='after_2_appt', x=bmiclass, y=[G, H, J])
+    ])
+    fig8.update_layout(title_text='Comparison of BMI values of Children (0-3) before and after dosage', yaxis_title_text='Count', barmode='group')
+    fig8.update_layout(transition_duration=500)
+    return fig8
+    
+    
+    
+    
+# For comparison of BMI values of Children (4-6) before and after dosage
+@app.callback(
+    Output('comparison-child2', 'figure'),
+    [Input('update-comparison-child2', 'n_intervals')])
+def update_figure(n_intervals):
+    standardBMI1 = ap[(ap.bmi1 >= 13.5) & (ap.bmi1 <= 16.5) & (ap.age > 3) & (ap.age <= 6)]
+    b = len(standardBMI1)
+    SeverelyThin1 = ap[(ap.bmi1 >= 7) & (ap.bmi1 <= 8) & (ap.age > 3) & (ap.age <= 6)]
+    n = len(SeverelyThin1)
+    ModeratelyThin1 = ap[(ap.bmi1 > 8) & (ap.bmi1 < 13.5) & (ap.age > 3) & (ap.age <= 6)]
+    m = len(ModeratelyThin1)
+    standardBMI2 = ap[(ap.bmi2 >= 13.5) & (ap.bmi2 <= 16.5) & (ap.age > 3) & (ap.age <= 6)]
+    B = len(standardBMI2)
+    SeverelyThin2 = ap[(ap.bmi2 >= 7) & (ap.bmi2 <= 8) & (ap.age > 3) & (ap.age <= 6)]
+    N = len(SeverelyThin2)
+    ModeratelyThin2 = ap[(ap.bmi2 > 8) & (ap.bmi2 < 13.5) & (ap.age > 3) & (ap.age <= 6)]
+    M = len(ModeratelyThin2)
+    bmiclass=['standard_bmi', 'severely_thin', 'moderately_thin']
+    
+    fig9 = go.Figure(data=[
+        go.Bar(name='after_1_appt', x=bmiclass, y=[b, n, m]),
+        go.Bar(name='after_2_appt', x=bmiclass, y=[B, N, M])
+    ])
+    fig9.update_layout(title_text='Comparison of BMI values of Children (4-6) before and after dosage', yaxis_title_text='Count', barmode='group')
+    fig9.update_layout(transition_duration=500)
+    return fig9   
 
 
 #Dash Table

@@ -6,6 +6,7 @@ from . models import *
 from datetime import datetime  
 from datetime import timedelta  
 from twilio.rest import Client
+from twilio.rest import Client
 from django.contrib.auth.decorators import login_required
 from django.db import connections
 from django.contrib.auth import authenticate, login, logout
@@ -51,10 +52,41 @@ def registerBen(request):
             random_number = User.objects.make_random_password(length=6, allowed_chars='123456789')
             cruser.u_phno = random_number
             user.username = cruser.u_phno
+            
             user.set_password(user.password)
+            msgFname = cruser.u_fname
+            msgSname = cruser.u_sname
+            msgUid  = random_number
+            msgWid = cruser.u_verified
+            msgDate = str(date.today())
+            msgPhone = cruser.u_phone
+            hwfname = request.session.get('hw_fname')
+            hwsname = request.session.get('hw_sname')
+            hwphone = request.session.get('hw_phno')
             user.save()
             cruser.save()
             
+            account_sid = 'AC3239aa7e879998bb1ebb7be3a1a497fe'
+            auth_token = 'dacfe22a39522af85359b85df0b81eb7'
+            client = Client(account_sid, auth_token)
+           
+
+
+            message = client.messages \
+                                .create(
+                                    body="Hello " +msgFname+" "+msgSname+" Your id is "+msgUid+" registered at: "+msgPhone+" By " +hwfname+" "+hwsname+ " "+hwphone+" on Date "+msgDate,
+                                    from_='+12058529824',
+                                    to="+91"+msgPhone
+                                )
+
+            print(message.sid)
+            state = cruser.u_states
+            
+            request.session['u_phno'] = cruser.u_phno
+            request.session['u_phone'] = cruser.u_phone
+            cursor1 = connections['default'].cursor()
+
+            cursor1.execute("UPDATE beneficiary_states SET s_count = s_count+1 WHERE s_states = %s", [state])
             request.session['u_phno'] = cruser.u_phno
             request.session['u_phone'] = cruser.u_phone
 
@@ -174,15 +206,24 @@ def userbmiapptid(request):
     refid=str(request.POST["userid"])
     val=True
     val1 = str(request.user)
-    cursor1 = connections['default'].cursor()
-    cursor1.execute("UPDATE beneficiary_userappointments SET apstatus = %s WHERE apref = %s", [val,refid])
-    cursor1.execute("UPDATE beneficiary_userappointments SET apreceived = %s WHERE apref = %s", [val1,refid])
     cursor = connections['default'].cursor()
-    cursor.execute("SELECT u_user_id FROM beneficiary_userappointments WHERE apref = %s", [refid])
+
+    cursor.execute("SELECT u_user_id,apstatus FROM beneficiary_userappointments WHERE apref = %s", [refid])
     row = cursor.fetchone()
     form1=str(row[0])
+    form2 = row[1]
+    print(form2)
+    if form2 == 0:
+        cursor1 = connections['default'].cursor()
+        cursor1.execute("UPDATE beneficiary_userappointments SET apstatus = %s WHERE apref = %s", [val,refid])
+        cursor1.execute("UPDATE beneficiary_userappointments SET apreceived = %s WHERE apref = %s", [val1,refid])
+        cursor = connections['default'].cursor()
+        cursor.execute("SELECT u_user_id,apstatus FROM beneficiary_userappointments WHERE apref = %s", [refid])
+
+   
+   
     forms = usr()
-    return render(request,'visitapptbmi.html',{'form':forms,'useridpass':form1})
+    return render(request,'visitapptbmi.html',{'form':forms,'useridpass':form1,'form2':form2})
 
 
 @login_required(login_url='loginPage')

@@ -76,7 +76,12 @@
               <p>Appointment Search</p>
             </a>
           </li>
-        
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'absent' %}">
+              <i class="material-icons">library_books</i>
+              <p>Missed Appointment</p>
+            </a>
+          </li>
           
         </ul>
       </div>
@@ -145,6 +150,9 @@
                         <th>
                           Type
                         </th>
+                        <th>Status</th>
+                        
+                         
                       </thead>
                       <tbody>
                         {% for i in ver %}
@@ -173,6 +181,25 @@
                            Nutrition
                           </td>
                           {% endif %}
+
+
+                          {% if i.apstatus == True %}
+                          <td style="background-color: rgb(40, 148, 44);color:white">
+                            {{i.apstatus}}
+                           </td>
+                           {% endif %}
+  
+  
+                           {% if i.apstatus == False %}
+                           <td style="background-color: rgb(228, 92, 58);color:white">
+                            {{i.apstatus}}
+                           </td>
+                           {% endif %}
+
+
+
+
+
                         </tr>
                         
                         {% endfor %}
@@ -210,6 +237,7 @@
                         <th>
                         Type
                         </th>
+                        <th>Status</th>
                       </thead>
                       <tbody>
                         {% for i in notver %}
@@ -238,8 +266,21 @@
                            Nutrition
                           </td>
                           {% endif %}
+                           
+                        {% if i.apstatus == True %}
+                        <td style="background-color: rgb(40, 148, 44);color:white">
+                          {{i.apstatus}}
+                         </td>
+                         {% endif %}
+
+
+                         {% if i.apstatus == False %}
+                         <td style="background-color: rgb(228, 92, 58);color:white">
+                          {{i.apstatus}}
+                         </td>
+                         {% endif %}
                         </tr>
-                        
+                       
                         {% endfor %}
                       </tbody>
                     </table>

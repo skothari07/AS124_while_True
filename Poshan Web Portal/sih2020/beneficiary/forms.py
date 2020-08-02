@@ -9,7 +9,7 @@ class beneficiary_info(forms.ModelForm):
 
     class Meta:
         model = beneficiary_register
-        fields = ('u_fname','u_sname','u_mother','u_father','u_adhar','u_addr','u_DOB','u_type','u_pincode','u_states','u_phno','u_phone','u_district','u_status','u_verified')        
+        fields = ('u_fname','u_sname','u_mother','u_father','u_adhar','u_addr','u_DOB','u_type','u_pincode','u_states','u_phno','u_phone','u_district','u_status','u_verified','u_ration','u_edu')        
         widgets = {'u_phno': forms.HiddenInput()} 
        
 class UserForm(forms.ModelForm):

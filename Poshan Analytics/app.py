@@ -76,7 +76,7 @@ app.layout = html.Div(children=[
 		    ],
 		    brand="Poshan Abhiyaan Dashboard",
 		    brand_href="http://poshanabhiyaan.gov.in/#/",
-		    color="#1c9eff",
+		    color="#001524",
 		    dark=True,)],style={'width': '100%'}
 		    ),
 	    	html.Div( children = [
@@ -120,19 +120,9 @@ app.layout = html.Div(children=[
 		    ],
 		    multi=False,
 		    value=""
-		)],style={'width': '30%','margin': '2% 5px 0px 3%'}
+		)],style={'width': '50%','margin': '2% 5px 0px 3%'}
 		),
-	    	html.Div( children = [
-	    	html.Label('Select Type:'),
-	    	dcc.Dropdown(id = 'dropdown-type',
-		    options=[
-			{'label': 'Women', 'value': 1},
-			{'label': 'Children', 'value': 0}
-		    ],
-		    multi=False,
-		    value=""
-		)],style={'width': '25%','margin': '2% 5px 0px 2%'}
-		),
+	    	
 		html.Div(children = [
 		html.Label('Pick Range :'),
 		html.Br(),
@@ -140,7 +130,7 @@ app.layout = html.Div(children=[
 		    id='my-date-picker-range',
 		    clearable=True,
 		    end_date_placeholder_text='Select a date!'
-		)],style={'width':'25%','margin': '1.8% 0px 0px 2%'}),
+		)],style={'width':'30%','margin': '1.8% 0px 0px 2%'}),
 		html.Div([
 		dbc.Card([
                 dbc.CardBody(
@@ -208,7 +198,7 @@ def map_count(input_data):
         featureidkey='properties.ST_NM',
         locations='s_states',
         color='s_count',
-        color_continuous_scale='Reds',
+        color_continuous_scale='Blues',
         labels={'s_count':'No. of Beneficiary','s_states':'State'},
     )
     fig1.update_geos(fitbounds="locations", visible=False)
@@ -258,7 +248,7 @@ def update_figure(n_intervals,selected_state,start_date,end_date):
     df1 = pd.DataFrame(df1,columns=['bmi_class','count'])
     df1['percentage'] = (df1['count']/df1['count'].sum()) * 100
     fig4 = px.pie(df1, values='percentage', names='bmi_class', title='Percentage of Women in different BMI Categories')
-
+    fig4.update_traces(hole=.4, hoverinfo="label+percent+name")
     fig4.update_layout(transition_duration=500)
     return fig4
     

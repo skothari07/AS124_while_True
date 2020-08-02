@@ -55,7 +55,13 @@ public class Menuscreen extends AppCompatActivity {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
 
+                if (menuNames[i] == "Profile") {
+                    Intent intent0 = new Intent(getApplicationContext(), ProfileActivity.class);
+                    intent0.putExtra("mobile", mobile);
+                    startActivity(intent0);
 
+
+                }
                 if (menuNames[i] == "General Info") {
                     Intent intent1 = new Intent(getApplicationContext(), FAQlist.class);
                     startActivity(intent1);

@@ -12,9 +12,12 @@ from django import forms
 from . models import worker_register
 from .forms import UserForm,hw_info
 from datetime import timedelta
+from twilio.rest import Client
 from django.contrib.auth import authenticate, login, logout
 from django.utils.dateparse import parse_date
+from googletrans import Translator
 # Create your views here
+
 def registerPage(request):
     registered = False
     if request.method == 'POST':
@@ -78,11 +81,21 @@ def loginPage(request):
 
                 login(request,user)
                 cursor = connections['default'].cursor()
-                cursor.execute("SELECT hw_pincode FROM Accounts_worker_register WHERE hw_phno = %s", [username])
+                cursor.execute("SELECT hw_pincode,hw_fname,hw_sname,hw_phno FROM Accounts_worker_register WHERE hw_phno = %s", [username])
                 row = cursor.fetchone()
                 form1=str(row[0])
+                form2=str(row[1])
+                form3=str(row[2])
+                form4=str(row[3])
                
                 request.session['hw_pincode'] = form1
+                request.session['hw_fname'] = form2
+                request.session['hw_sname'] = form3
+                request.session['hw_phno'] = form4
+                
+
+
+
                 return HttpResponseRedirect(reverse('workerDash'))
         else:
                 return HttpResponse("Your account was inactive.")
@@ -244,3 +257,81 @@ def absent(request):
     #notver = form1.filter(apdate=date.month())
     context = {'form':form,'notver':notver}
     return render(request,"absent.html",context)
+
+
+
+def localsms(request):
+    translator = Translator(service_urls=[
+      'translate.google.com',
+      
+    ])
+
+    lang = request.POST['lang']
+     
+    hwfname = str(request.session.get('hw_fname'))
+    hwsname = str(request.session.get('hw_sname'))
+    hwphone = str(request.session.get('hw_phno'))
+
+
+    form = userappointments.objects.all()
+    hwno = request.session.get('hw_pincode')
+    tommorow = date.today()+timedelta(days=1)
+    ver = form.filter(apdate=tommorow,apPincode=hwno,apstatus=False)
+    account_sid = 'AC3239aa7e879998bb1ebb7be3a1a497fe'
+    auth_token = 'dacfe22a39522af85359b85df0b81eb7'
+    client = Client(account_sid, auth_token)
+    
+    for i in ver:
+        msg = "Hey " +i.u_user_id+" Please attend you appointment with id: "+ i.apref+" for the date: "+ str(i.apdate)+" Registered at: "+ str(i.apPhone)+" For any Query Contact: "+hwfname+"  "+hwsname+ " at "+hwphone
+        a  = translator.translate(msg,dest=lang)
+        print(a.text)
+        
+        message = client.messages \
+                        .create(
+                            body = a.text,
+                            from_='+12058529824',
+                            to="+91"+i.apPhone
+                        )
+                    
+
+        print(message.sid)
+    
+    return HttpResponseRedirect(reverse('workerDash'))
+
+
+
+
+
+def localsms1(request):
+        translator = Translator(service_urls=[
+       'translate.google.com',
+      
+        ])
+        lang = request.POST['lang']
+        hwfname = str(request.session.get('hw_fname'))
+        hwsname = str(request.session.get('hw_sname'))
+        hwphone = str(request.session.get('hw_phno'))
+        form = userappointments.objects.all()
+        hwno = request.session.get('hw_pincode')
+        tommorow = date.today()
+        ver = form.filter(apdate=tommorow,apPincode=hwno,apstatus=False)
+        account_sid = 'AC3239aa7e879998bb1ebb7be3a1a497fe'
+        auth_token = 'dacfe22a39522af85359b85df0b81eb7'
+        client = Client(account_sid, auth_token)
+        
+        for i in ver:
+            msg = "Hey " +i.u_user_id+" You missed your appointment with id: "+ i.apref+" for the date: "+ str(i.apdate)+" Registered at: "+ str(i.apPhone)+" For any Query Contact: "+hwfname+"  "+hwsname+ " at "+hwphone
+            a  = translator.translate(msg,dest=lang)
+           
+
+            
+
+            message = client.messages \
+                            .create(
+                                body=a.text,
+                                from_='+12058529824',
+                                to="+91"+i.apPhone
+                            )
+
+            print(message.sid)
+        return HttpResponseRedirect(reverse('workerDash'))

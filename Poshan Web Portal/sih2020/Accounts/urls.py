@@ -17,5 +17,7 @@ urlpatterns = [
     path("manualappt",views.manualappt,name="manualappt"),
     path('gentimeline1',views.gentimeline1,name='gentimeline1'),
     path("absent",views.absent,name="absent"),
+    path("localsms",views.localsms,name="localsms"),
+    path("localsms1",views.localsms1,name="localsms1"),
 
 ]

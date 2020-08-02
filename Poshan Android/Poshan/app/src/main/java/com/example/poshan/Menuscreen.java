@@ -1,8 +1,6 @@
 package com.example.poshan;
-
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
-
 import android.app.Activity;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -19,7 +17,6 @@ import android.widget.GridView;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
-
 import java.util.Locale;
 
 
@@ -29,8 +26,8 @@ public class Menuscreen extends AppCompatActivity {
     String mobile;
 
     GridView gridView;
-    String[] menuNames = {"Profile", "General Info (FAQs)", "Help", "Notifications"};
-    int[] menuImages = {R.drawable.profile, R.drawable.diet, R.drawable.helpicon, R.drawable.notificationicon};
+    String[] menuNames = {"Profile", "General Info", "Help", "Notifications"};
+    int[] menuImages = {R.drawable.profile, R.drawable.faq, R.drawable.help, R.drawable.notification};
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -59,7 +56,7 @@ public class Menuscreen extends AppCompatActivity {
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
 
 
-                if (menuNames[i] == "General Info (FAQs)") {
+                if (menuNames[i] == "General Info") {
                     Intent intent1 = new Intent(getApplicationContext(), FAQlist.class);
                     startActivity(intent1);
 

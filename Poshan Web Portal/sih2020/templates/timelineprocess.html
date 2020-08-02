@@ -195,14 +195,15 @@
                         <th>
                           Date
                         </th>
-                        <th>
-                          Status
-                        </th>
+                       
                         <th>
                           Reference No
                         </th>
                         <th>
                         AppoNo
+                        </th>
+                         <th>
+                          Status
                         </th>
                       </thead>
                       <tbody>
@@ -211,9 +212,7 @@
                           <td>
                             {{i.apdate}}
                           </td>
-                          <td>
-                            {{i.apstatus}} 
-                          </td>
+                         
                           <td>
                            {{i.apref}}
                           </td>
@@ -221,6 +220,18 @@
                           {{i.apno}}
                           </td>
                           
+                          {% if i.apstatus == True %}
+                        <td style="background-color: rgb(40, 148, 44);color:white">
+                          {{i.apstatus}}
+                         </td>
+                         {% endif %}
+
+
+                         {% if i.apstatus == False %}
+                         <td style="background-color: rgb(228, 92, 58);color:white">
+                          {{i.apstatus}}
+                         </td>
+                         {% endif %}
                         </tr>
                         
                         {% endfor %}

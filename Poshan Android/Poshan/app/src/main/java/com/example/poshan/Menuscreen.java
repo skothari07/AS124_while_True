@@ -1,9 +1,12 @@
 package com.example.poshan;
-
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
-
+import android.app.Activity;
+import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
-
+import android.content.SharedPreferences;
+import android.content.res.Configuration;
 import android.net.Uri;
 import android.os.Bundle;
 import android.view.View;
@@ -11,9 +14,10 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.BaseAdapter;
 import android.widget.GridView;
-
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
+import java.util.Locale;
 
 
 public class Menuscreen extends AppCompatActivity {
@@ -22,17 +26,26 @@ public class Menuscreen extends AppCompatActivity {
     String mobile;
 
     GridView gridView;
-    String[] menuNames = {"Profile", "General Info (FAQs)", "Help", "Notifications"};
-    int[] menuImages = {R.drawable.profile, R.drawable.diet, R.drawable.helpicon, R.drawable.notificationicon};
+    String[] menuNames = {"Profile", "General Info", "Help", "Notifications"};
+    int[] menuImages = {R.drawable.profile, R.drawable.faq, R.drawable.help, R.drawable.notification};
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         Intent intent = getIntent();
         mobile = intent.getStringExtra("mobile");
+        loadLocale();
+
 
         setContentView(R.layout.activity_menuscreen);
 
+        ImageButton changelang=findViewById(R.id.settingicon);
+        changelang.setOnClickListener( new View.OnClickListener(){
+            public void onClick(View view)
+            {
+                showlanguageDialog();
+            }
+        });
 
         gridView = findViewById(R.id.gridview);
 
@@ -43,12 +56,13 @@ public class Menuscreen extends AppCompatActivity {
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
 
 
-                if (menuNames[i] == "General Info (FAQs)") {
+                if (menuNames[i] == "General Info") {
                     Intent intent1 = new Intent(getApplicationContext(), FAQlist.class);
                     startActivity(intent1);
 
 
                 }
+
                 if (menuNames[i] == "Notifications") {
                     Intent intent2 = new Intent(getApplicationContext(), NotificationsActivity.class);
                     intent2.putExtra("mobile", mobile);
@@ -67,7 +81,59 @@ public class Menuscreen extends AppCompatActivity {
 
     }
 
+    private void showlanguageDialog() {
+        final String[] listItems = {"English", "हिंदी", "मराठी"};
+        AlertDialog.Builder mBuilder = new AlertDialog.Builder(Menuscreen.this);
+        mBuilder.setTitle("Choose Language");
+        mBuilder.setSingleChoiceItems(listItems, -1, new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialogInterface, int i) {
+                if (i == 0) {
+                    setLocale("en");
+                    recreate();
+                    k=0;
+                    l=0;
 
+                }
+                else if (i == 1)
+                {
+                    setLocale("hi");
+                    recreate();
+                    k=1;
+                    l=1;
+                }
+                else if(i==2)
+                {
+                    setLocale("mr");
+                    recreate();
+                    k=2;l=2;
+
+
+                }
+
+                dialogInterface.dismiss();
+            }
+
+        });
+
+        AlertDialog mDialog=mBuilder.create();
+
+        mDialog.show();
+    }
+
+    private void setLocale(String lang )
+    {
+        Locale locale= new Locale(lang);
+        Locale.setDefault(locale);
+        Configuration config =new Configuration();
+        config.locale=locale;
+        getBaseContext().getResources().updateConfiguration(config,getBaseContext().getResources().getDisplayMetrics());
+
+        SharedPreferences.Editor editor=getSharedPreferences("Settings", Context.MODE_PRIVATE).edit();
+        editor.putString("My_lang",lang);
+        editor.apply();
+
+
+    }
 
     private class CustomAdapter extends BaseAdapter {
         @Override
@@ -98,6 +164,14 @@ public class Menuscreen extends AppCompatActivity {
 
         }
     }
+    public void loadLocale()
+    {
+        SharedPreferences prefs =getSharedPreferences("Settings", Activity.MODE_PRIVATE);
+        String language=prefs.getString("My_lang","");
 
+        setLocale(language);
+
+
+    }
 
 }

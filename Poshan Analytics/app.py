@@ -19,16 +19,18 @@ import json
 
 
 ####################### Database Credentials ########################################
-ENDPOINT="sih2020.cfafpwsc4oxl.us-east-2.rds.amazonaws.com"
+
+ENDPOINT="sih2020v2.co9od6laqqv8.ap-south-1.rds.amazonaws.com"
 PORT="3306"
 USR="admin"
-REGION="us-east-2"
+REGION="ap-south-1"
 DBNAME="mysql"
 os.environ['LIBMYSQL_ENABLE_CLEARTEXT_PLUGIN'] = '1'
 
 #####################################################################################
 
 ####################### Database connection #########################################
+
 try:
     conn =  mysql.connector.connect(host=ENDPOINT, user=USR, passwd='sih2020agnels', port=PORT, database=DBNAME)
     c = conn.cursor()
@@ -39,32 +41,24 @@ except Exception as e:
     print("Database connection failed due to {}".format(e))
     
 ####################################################################################
-'''
-#get relative data folder
-PATH = pathlib.Path(__file__).parent
-DATA_PATH = PATH.joinpath("data").resolve()'''
 #dataframe
-df = pd.read_csv('sample_data.csv')
 ap = pd.read_csv('small_dataset.csv')
-op = pd.read_csv("sampdata.csv")
 
 ######################### Start Dash ################################################
 app = dash.Dash(
     __name__
     , meta_tags=[{"name": "viewport", "content": "width=device-width"}]
-    #,assets_folder = str(PATH.joinpath("assets").resolve())
     ,external_stylesheets=[dbc.themes.BOOTSTRAP])
 ######################################################################################
 
-ben_bmi = pd.read_sql_query('SELECT * FROM sih2020.beneficiary_userbmi',conn)
 ben_reg = pd.read_sql_query('SELECT * FROM sih2020.beneficiary_beneficiary_register',conn)
+ben_bmi = pd.read_sql_query('SELECT * FROM sih2020.beneficiary_userbmi',conn)
 
-print(ben_bmi.u_user_id.dtype)
-print(ben_reg.u_phno.dtype)
 ben = ben_reg.merge(ben_bmi, left_on='u_phno', right_on='u_user_id')
+ben.drop(['id_x','u_fname', 'u_sname','u_user_id_x','u_verified','id_y','u_status','u_verified','u_father','u_mother'],axis = 1, inplace = True)
 print(ben)
-
 ben_state_count =pd.read_sql_query('SELECT * FROM sih2020.beneficiary_states',conn)
+
 ############################# Layout of the Dashboard ################################
 
 app.title = 'Poshan Analytics'
@@ -72,9 +66,9 @@ app.layout = html.Div(children=[
 		html.Div(children = [ 
 		dbc.NavbarSimple(
 		    children=[
-			dbc.NavItem(dbc.NavLink("Web Portal", href="#")),
+			dbc.NavItem(dbc.NavLink("Web Portal", href="http://ec2-13-233-253-221.ap-south-1.compute.amazonaws.com:8000/")),
 		    ],
-		    brand="Poshan Abhiyaan Dashboard",
+		    brand="Real-Time Poshan Analytics",
 		    brand_href="http://poshanabhiyaan.gov.in/#/",
 		    color="#001524",
 		    dark=True,)],style={'width': '100%'}
@@ -129,6 +123,8 @@ app.layout = html.Div(children=[
 		dcc.DatePickerRange(
 		    id='my-date-picker-range',
 		    clearable=True,
+		    min_date_allowed=ben['bmdate'].min(),
+		    max_date_allowed=ben['bmdate'].max(),
 		    end_date_placeholder_text='Select a date!'
 		)],style={'width':'30%','margin': '1.8% 0px 0px 2%'}),
 		html.Div([
@@ -150,30 +146,28 @@ app.layout = html.Div(children=[
 		html.Div([
 	        dash_table.DataTable(id='table-multicol-sorting',
 		columns=[
-		{"name": i, "id": i} for i in ben_bmi.columns
+		{"name": i, "id": i} for i in ben_state_count.columns
 	    ],
 	    page_current=0,
 	    page_size=10,
 	    page_action='custom',
 	    sort_action='custom',
 	    sort_mode='multi',
-	    sort_by=[]
-	    )],style={'width': '100%','margin': '10px 5% 10px 5%'}),
+	    sort_by=[],
+	    style_cell={'textAlign': 'left'},
+	    style_as_list_view=True,
+	    )],style={'width': '90%','margin': '10px 5% 10px 5%'}),
+	    html.Div([dcc.Graph(id='boxplot-type'),dcc.Interval(id="update-boxplot-type",interval=10000)],style={'margin': '2% 5% 0px 10%'}),
+	    html.Div([dcc.Graph(id='bmi-count'),dcc.Interval(id="update-bmi-count",interval=10000)],style={'margin': '2% 5% 0px 5%'}),
 	    html.Div([dcc.Graph(id='ration'),dcc.Interval(id="update-ration",interval=10000)],style={'margin': '2% 5% 0px 5%'}),
 	    html.Div([dcc.Graph(id='education'),dcc.Interval(id="update-education",interval=10000)],style={'margin': '2% 5% 0px 5%'}),
 	    html.Div([dcc.Graph(id='yellow-bmi'),dcc.Interval(id="update-yellow-bmi",interval=10000)],style={'margin': '2% 5% 0px 5%'}),
 	    html.Div([dcc.Graph(id='orange-bmi'),dcc.Interval(id="update-orange-bmi",interval=10000)],style={'margin': '2% 5% 0px 5%'}),
 	    html.Div([dcc.Graph(id='white-bmi'),dcc.Interval(id="update-white-bmi",interval=10000)],style={'margin': '2% 5% 0px 5%'}),
-	    html.Div([dcc.Graph(id='boxplot-type'),dcc.Interval(id="update-boxplot-type",interval=10000)],style={'margin': '2% 5% 0px 10%'}),
-	    html.Div([dcc.Graph(id='bmi-count'),dcc.Interval(id="update-bmi-count",interval=10000)],style={'margin': '2% 5% 0px 5%'}),
 	    html.Div([dcc.Graph(id='pie-bmi-women'),dcc.Interval(id="update-pie-bmi-women",interval=10000)],style={'margin': '2% 5% 0px 10%'}),
 	    html.Div([dcc.Graph(id='pie-bmi-child1'),dcc.Interval(id="update-pie-bmi-child1",interval=10000)],style={'margin': '2% 5% 0px 5%'}),
-	    html.Div([dcc.Graph(id='pie-bmi-child2'),dcc.Interval(id="update-pie-bmi-child2",interval=10000)],style={'margin': '2% 5% 0px 10%'}),
 	    html.Div([dcc.Graph(id='comparison-women'),dcc.Interval(id="update-comparison-women",interval=10000)],style={'margin': '2% 5% 0px 5%'}),
-	    html.Div([dcc.Graph(id='comparison-child1'),dcc.Interval(id="update-comparison-child1",interval=10000)],style={'margin': '2% 5% 0px 10%'}),
-	    html.Div([dcc.Graph(id='comparison-child2'),dcc.Interval(id="update-comparison-child2",interval=10000)],style={'margin': '2% 5% 0px 5%'}),
-	   
-		
+	    html.Div([dcc.Graph(id='comparison-child1'),dcc.Interval(id="update-comparison-child1",interval=10000)],style={'margin': '2% 5% 0px 10%'}),		
 ],style={'display': 'flex','flex-direction': 'row','flex-wrap': 'wrap','overflow': 'hidden'})
 
 ##########################################################################################################
@@ -185,25 +179,49 @@ app.layout = html.Div(children=[
 @app.callback(Output("card_text_1", "children"),
               [Input('update-counter', 'n_intervals')])
 def total_count(input_data):
-    return ben_reg['u_user_id'].nunique()
+    return ben_reg.u_adhar.nunique()
     
 
 #Map
 @app.callback(Output('map', 'figure'),
               [Input('update-map', 'n_intervals')])
 def map_count(input_data):
-    fig1 = px.choropleth(
+    fig = px.choropleth(
         ben_state_count,
         geojson="https://gist.githubusercontent.com/jbrobst/56c13bbbf9d97d187fea01ca62ea5112/raw/e388c4cae20aa53cb5090210a42ebb9b765c0a36/india_states.geojson",
         featureidkey='properties.ST_NM',
         locations='s_states',
         color='s_count',
         color_continuous_scale='Blues',
-        labels={'s_count':'No. of Beneficiary','s_states':'State'},
-    )
-    fig1.update_geos(fitbounds="locations", visible=False)
-    fig1.update_layout(height=800)
-    return fig1
+        labels={'s_count':'No. of Beneficiaries','s_states':'State'},)
+    fig.update_geos(fitbounds="locations", visible=False)
+    fig.update_layout(height=800)
+    return fig
+    
+#Dash Table
+@app.callback(
+    Output('table-multicol-sorting', "data"),
+    [Input('table-multicol-sorting', "page_current"),
+     Input('table-multicol-sorting', "page_size"),
+     Input('table-multicol-sorting', "sort_by")])
+def update_table(page_current, page_size, sort_by):
+    print(sort_by)
+    if len(sort_by):
+        dff = ben_state_count.sort_values(
+            [col['column_id'] for col in sort_by],
+            ascending=[
+                col['direction'] == 'asc'
+                for col in sort_by
+            ],
+            inplace=False
+        )
+    else:
+        # No sort is applied
+        dff = ben_state_count
+
+    return dff.iloc[
+        page_current*page_size:(page_current+ 1)*page_size
+    ].to_dict('records')
 
 
 # Box Plot of BMI for different classes of beneficiaries
@@ -214,9 +232,28 @@ def map_count(input_data):
     Input('my-date-picker-range', 'start_date'),
     Input('my-date-picker-range', 'end_date')])
 def update_figure(n_intervals,selected_state,start_date,end_date):
-    fig2 = px.box(df, x="status", y="bmi", title="Box Plot of BMI for different classes of beneficiaries")
-    fig2.update_layout(transition_duration=500)
-    return fig2
+    try:
+        start_date= dt.strptime(start_date, '%Y-%m-%d').date()
+        end_date = dt.strptime(end_date, '%Y-%m-%d').date()
+    except Exception as e:
+        print("{}".format(e))
+    if(selected_state and start_date and end_date):
+        mask = (ben['u_states'] == selected_state) & (ben['bmdate'] >= start_date) & (ben['bmdate'] < end_date)
+        fig1 = px.box(ben, x=ben[mask]['u_type'], y=ben[mask]['currentbmi'], title="Box Plot of BMI for 1:Mother , 0:Children")
+        fig1.update_layout(transition_duration=500)
+        
+    elif(selected_state):
+        mask=(ben['u_states'] == selected_state)
+        fig1 = px.box(ben, x=ben[mask]['u_type'], y=ben[mask]['currentbmi'],title="Box Plot of BMI for 1:Mother , 0:Children")
+        fig1.update_layout(transition_duration=500)
+    elif(start_date and end_date):
+        mask = (ben['bmdate'] >= start_date) & (ben['bmdate'] < end_date)
+        fig1 = px.box(ben, x=ben[mask]['u_type'], y=ben[mask]['currentbmi'], title="Box Plot of BMI for 1:Mother , 0:Children")
+        fig1.update_layout(transition_duration=500)    
+    else :
+        fig1 = px.box(ben, x=ben.u_type, y=ben.currentbmi,title="Box Plot of BMI for 1:Mother , 0:Children")
+        fig1.update_layout(transition_duration=500)
+    return fig1
 
 # Histogram of count for different BMI levels   
 @app.callback(
@@ -226,9 +263,360 @@ def update_figure(n_intervals,selected_state,start_date,end_date):
     Input('my-date-picker-range', 'start_date'),
     Input('my-date-picker-range', 'end_date')])
 def update_figure(n_intervals,selected_state,start_date,end_date):
-    fig3 = px.histogram(df, x="bmi", color="status", title="Histogram of count for different BMI levels")
-    fig3.update_layout(transition_duration=500)
+    try:
+        start_date= dt.strptime(start_date, '%Y-%m-%d').date()
+        end_date = dt.strptime(end_date, '%Y-%m-%d').date()
+    except Exception as e:
+        print("{}".format(e))
+    if(selected_state and start_date and end_date):
+        mask = (ben['u_states'] == selected_state) & (ben['bmdate'] >= start_date) & (ben['bmdate'] < end_date)
+        fig2 = px.histogram(ben, x=ben[mask]['currentbmi'], color=ben[mask]['u_type'], title="Histogram : BMI Distribution and Count")
+        fig2.update_layout(transition_duration=500)
+        
+    elif(selected_state):
+        mask=(ben['u_states'] == selected_state)
+        fig2 = px.histogram(ben, x=ben[mask]['currentbmi'], color=ben[mask]['u_type'], title="Histogram : BMI Distribution and Count")
+        fig2.update_layout(transition_duration=500)
+    elif(start_date and end_date):
+        mask = (ben['bmdate'] >= start_date) & (ben['bmdate'] < end_date)
+        fig2 = px.histogram(ben, x=ben[mask]['currentbmi'], color=ben[mask]['u_type'], title="Histogram : BMI Distribution and Count")
+        fig2.update_layout(transition_duration=500)
+    else:
+        fig2 = px.histogram(ben, x=ben['currentbmi'], color=ben['u_type'], title="Histogram : BMI Distribution and Count")
+        fig2.update_layout(transition_duration=500)
+
+
+    return fig2
+    
+    
+#Pie chart for percentage of beneficiaries of different financial background
+@app.callback(
+    Output('ration', 'figure'),
+    [Input('update-ration', 'n_intervals'),
+    Input('dropdown-state', 'value'),
+    Input('my-date-picker-range', 'start_date'),
+    Input('my-date-picker-range', 'end_date')])
+def update_figure(n_intervals,selected_state,start_date,end_date):
+    try:
+        start_date= dt.strptime(start_date, '%Y-%m-%d').date()
+        end_date = dt.strptime(end_date, '%Y-%m-%d').date()
+    except Exception as e:
+        print("{}".format(e))
+    if(selected_state and start_date and end_date):
+        mask = (ben['u_states'] == selected_state) & (ben['bmdate'] >= start_date) & (ben['bmdate'] < end_date)
+        yellow = ben[mask][(ben.u_ration == 'Yellow')]
+        print (yellow)
+        print(ben)
+        orange = ben[mask][(ben.u_ration == 'Orange')]
+        white = ben[mask][(ben.u_ration == 'White')]
+        op1 = {'ration_class':['Yellow - below poverty line', 'Orange - annual income Rs.15,000 to Rs.1 Lakh', 'White - annual income over Rs.1 Lakh'],
+           'count':[len(yellow), len(orange), len(white)]}
+        op1 = pd.DataFrame(op1,columns=['ration_class','count'])
+        op1['percentage'] = (op1['count']/op1['count'].sum()) * 100
+        fig3 = px.pie(op1, values='percentage', names='ration_class', title="Beneficiary's financial background")
+        fig3.update_traces(hole=.4, hoverinfo="label+percent+name")
+        fig3.update_layout(transition_duration=500)
+        
+    elif(selected_state):
+        mask=(ben['u_states'] == selected_state)
+        yellow = ben[mask][(ben.u_ration == 'Yellow')]
+        orange = ben[mask][(ben.u_ration == 'Orange')]
+        white = ben[mask][(ben.u_ration == 'White')]
+        op1 = {'ration_class':['Yellow - below poverty line', 'Orange - annual income Rs.15,000 to Rs.1 Lakh', 'White - annual income over Rs.1 Lakh'],
+           'count':[len(yellow), len(orange), len(white)]}
+        op1 = pd.DataFrame(op1,columns=['ration_class','count'])
+        op1['percentage'] = (op1['count']/op1['count'].sum()) * 100
+        fig3 = px.pie(op1, values='percentage', names='ration_class', title="Beneficiary's financial background")
+        fig3.update_traces(hole=.4, hoverinfo="label+percent+name")
+        fig3.update_layout(transition_duration=500)
+    elif(start_date and end_date):
+        mask = (ben['bmdate'] >= start_date) & (ben['bmdate'] < end_date)
+        yellow = ben[mask][(ben.u_ration == 'Yellow')]
+        orange = ben[mask][(ben.u_ration == 'Orange')]
+        white = ben[mask][(ben.u_ration == 'White')]
+        op1 = {'ration_class':['Yellow - below poverty line', 'Orange - annual income Rs.15,000 to Rs.1 Lakh', 'White - annual income over Rs.1 Lakh'],
+           'count':[len(yellow), len(orange), len(white)]}
+        op1 = pd.DataFrame(op1,columns=['ration_class','count'])
+        op1['percentage'] = (op1['count']/op1['count'].sum()) * 100
+        fig3 = px.pie(op1, values='percentage', names='ration_class', title="Beneficiary's financial background")
+        fig3.update_traces(hole=.4, hoverinfo="label+percent+name")
+        fig3.update_layout(transition_duration=500)
+    else:
+        yellow = ben[(ben.u_ration == 'Yellow')]
+        orange = ben[(ben.u_ration == 'Orange')]
+        white = ben[(ben.u_ration == 'White')]
+        op1 = {'ration_class':['Yellow - below poverty line', 'Orange - annual income Rs.15,000 to Rs.1 Lakh', 'White - annual income over Rs.1 Lakh'],
+           'count':[len(yellow), len(orange), len(white)]}
+        op1 = pd.DataFrame(op1,columns=['ration_class','count'])
+        op1['percentage'] = (op1['count']/op1['count'].sum()) * 100
+        fig3 = px.pie(op1, values='percentage', names='ration_class', title="Beneficiary's financial background")
+        fig3.update_traces(hole=.4, hoverinfo="label+percent+name")
+        fig3.update_layout(transition_duration=500)
+
     return fig3
+    
+    
+    
+# Pie chart for education
+@app.callback(
+    Output('education', 'figure'),
+    [Input('update-education', 'n_intervals'),
+    Input('dropdown-state', 'value'),
+    Input('my-date-picker-range', 'start_date'),
+    Input('my-date-picker-range', 'end_date')])
+def update_figure(n_intervals,selected_state,start_date,end_date):
+    try:
+        start_date= dt.strptime(start_date, '%Y-%m-%d').date()
+        end_date = dt.strptime(end_date, '%Y-%m-%d').date()
+    except Exception as e:
+        print("{}".format(e))
+    if(selected_state and start_date and end_date):
+        mask = (ben['u_states'] == selected_state) & (ben['bmdate'] >= start_date) & (ben['bmdate'] < end_date)
+        tenth = ben[mask][(ben.u_edu == '10th pass')]
+        below_tenth = ben[mask][(ben.u_edu == 'Below 10th')]
+        twelveth = ben[mask][(ben.u_edu == '12th pass')]
+        grad = ben[mask][(ben.u_edu == 'Graduate')]
+        op2 = {'edu_class':['10th Pass', '12th Pass', 'Graduate','Below 10th'],
+           'count':[len(tenth), len(twelveth), len(grad),len(below_tenth)]}
+        op2 = pd.DataFrame(op2,columns=['edu_class','count'])
+        op2['percentage'] = (op2['count']/op2['count'].sum()) * 100
+        fig4 = px.pie(op2, values='percentage', names='edu_class', title="Beneficiary's Education background")
+        fig4.update_traces(hole=.4, hoverinfo="label+percent+name")
+        fig4.update_layout(transition_duration=500)
+        
+    elif(selected_state):
+        mask=(ben['u_states'] == selected_state)
+        tenth = ben[mask][(ben.u_edu == '10th pass')]
+        below_tenth = ben[mask][(ben.u_edu == 'Below 10th')]
+        twelveth = ben[mask][(ben.u_edu == '12th pass')]
+        grad = ben[mask][(ben.u_edu == 'Graduate')]
+        op2 = {'edu_class':['10th Pass', '12th Pass', 'Graduate','Below 10th'],
+           'count':[len(tenth), len(twelveth), len(grad),len(below_tenth)]}
+        op2 = pd.DataFrame(op2,columns=['edu_class','count'])
+        op2['percentage'] = (op2['count']/op2['count'].sum()) * 100
+        fig4 = px.pie(op2, values='percentage', names='edu_class', title="Beneficiary's Education background")
+        fig4.update_traces(hole=.4, hoverinfo="label+percent+name")
+        fig4.update_layout(transition_duration=500)
+    elif(start_date and end_date):
+        mask = (ben['bmdate'] >= start_date) & (ben['bmdate'] < end_date)
+        tenth = ben[mask][(ben.u_edu == '10th pass')]
+        below_tenth = ben[mask][(ben.u_edu == 'Below 10th')]
+        twelveth = ben[mask][(ben.u_edu == '12th pass')]
+        grad = ben[mask][(ben.u_edu == 'Graduate')]
+        op2 = {'edu_class':['10th Pass', '12th Pass', 'Graduate','Below 10th'],
+           'count':[len(tenth), len(twelveth), len(grad),len(below_tenth)]}
+        op2 = pd.DataFrame(op2,columns=['edu_class','count'])
+        op2['percentage'] = (op2['count']/op2['count'].sum()) * 100
+        fig4 = px.pie(op2, values='percentage', names='edu_class', title="Beneficiary's Education background")
+        fig4.update_traces(hole=.4, hoverinfo="label+percent+name")
+        fig4.update_layout(transition_duration=500)
+    else:
+        tenth = ben[(ben.u_edu == '10th pass')]
+        below_tenth = ben[(ben.u_edu == 'Below 10th')]
+        twelveth = ben[(ben.u_edu == '12th pass')]
+        grad = ben[(ben.u_edu == 'Graduate')]
+        op2 = {'edu_class':['10th Pass', '12th Pass', 'Graduate','Below 10th'],
+           'count':[len(tenth), len(twelveth), len(grad),len(below_tenth)]}
+        op2 = pd.DataFrame(op2,columns=['edu_class','count'])
+        op2['percentage'] = (op2['count']/op2['count'].sum()) * 100
+        fig4 = px.pie(op2, values='percentage', names='edu_class', title="Beneficiary's Education background")
+        fig4.update_traces(hole=.4, hoverinfo="label+percent+name")
+        fig4.update_layout(transition_duration=500)
+    return fig4 
+    
+    
+# Pie chart for percentage of beneficiaries in different BMI categories who belong to below poverty line class
+@app.callback(
+    Output('yellow-bmi', 'figure'),
+    [Input('update-yellow-bmi', 'n_intervals'),
+    Input('dropdown-state', 'value'),
+    Input('my-date-picker-range', 'start_date'),
+    Input('my-date-picker-range', 'end_date')])
+def update_figure(n_intervals,selected_state,start_date,end_date):   
+    try:
+        start_date= dt.strptime(start_date, '%Y-%m-%d').date()
+        end_date = dt.strptime(end_date, '%Y-%m-%d').date()
+    except Exception as e:
+        print("{}".format(e))
+        
+    if(selected_state and start_date and end_date):
+        mask = (ben['u_states'] == selected_state) & (ben['bmdate'] >= start_date) & (ben['bmdate'] < end_date)
+        standard_bmii = ben[mask][(ben.currentbmi >= 18.25) & (ben.currentbmi <= 25) & (ben.u_ration == "Yellow")]
+        severely_thinn = ben[mask][(ben.currentbmi < 16) & (ben.u_ration == "Yellow")]
+        moderately_thinn = ben[mask][(ben.currentbmi >= 16) & (ben.currentbmi < 18.5) & (ben.u_ration == "Yellow")]
+        op3 = {'bmi_class':['standard_bmi', 'severely_thin', 'moderately_thin'],
+           'count':[len(standard_bmii), len(severely_thinn), len(moderately_thinn)]}
+        op3 = pd.DataFrame(op3,columns=['bmi_class','count'])
+        op3['percentage'] = (op3['count']/op3['count'].sum()) * 100
+        fig5 = px.pie(op3, values='percentage', names='bmi_class', title='Different BMI categories of Beneficiaries who belong to below poverty line class')
+        fig5.update_traces(hole=.4, hoverinfo="label+percent+name")
+        fig5.update_layout(transition_duration=500)
+        
+    elif(selected_state):
+        mask=(ben['u_states'] == selected_state)
+        standard_bmii = ben[mask][(ben.currentbmi >= 18.25) & (ben.currentbmi <= 25) & (ben.u_ration == "Yellow")]
+        severely_thinn = ben[mask][(ben.currentbmi < 16) & (ben.u_ration == "Yellow")]
+        moderately_thinn = ben[mask][(ben.currentbmi >= 16) & (ben.currentbmi < 18.5) & (ben.u_ration == "Yellow")]
+        op3 = {'bmi_class':['standard_bmi', 'severely_thin', 'moderately_thin'],
+           'count':[len(standard_bmii), len(severely_thinn), len(moderately_thinn)]}
+        op3 = pd.DataFrame(op3,columns=['bmi_class','count'])
+        op3['percentage'] = (op3['count']/op3['count'].sum()) * 100
+        fig5 = px.pie(op3, values='percentage', names='bmi_class', title='Different BMI categories of Beneficiaries who belong to below poverty line class')
+        fig5.update_traces(hole=.4, hoverinfo="label+percent+name")
+        fig5.update_layout(transition_duration=500)
+    elif(start_date and end_date):
+        mask = (ben['bmdate'] >= start_date) & (ben['bmdate'] < end_date)
+        standard_bmii = ben[mask][(ben.currentbmi >= 18.25) & (ben.currentbmi <= 25) & (ben.u_ration == "Yellow")]
+        severely_thinn = ben[mask][(ben.currentbmi < 16) & (ben.u_ration == "Yellow")]
+        moderately_thinn = ben[mask][(ben.currentbmi >= 16) & (ben.currentbmi < 18.5) & (ben.u_ration == "Yellow")]
+        op3 = {'bmi_class':['standard_bmi', 'severely_thin', 'moderately_thin'],
+           'count':[len(standard_bmii), len(severely_thinn), len(moderately_thinn)]}
+        op3 = pd.DataFrame(op3,columns=['bmi_class','count'])
+        op3['percentage'] = (op3['count']/op3['count'].sum()) * 100
+        fig5 = px.pie(op3, values='percentage', names='bmi_class', title='Different BMI categories of Beneficiaries who belong to below poverty line class')
+        fig5.update_traces(hole=.4, hoverinfo="label+percent+name")
+        fig5.update_layout(transition_duration=500)
+    else:
+        standard_bmii = ben[(ben.currentbmi >= 18.25) & (ben.currentbmi <= 25) & (ben.u_ration == "Yellow")]
+        severely_thinn = ben[(ben.currentbmi < 16) & (ben.u_ration == "Yellow")]
+        moderately_thinn = ben[(ben.currentbmi >= 16) & (ben.currentbmi < 18.5) & (ben.u_ration == "Yellow")]
+        op3 = {'bmi_class':['standard_bmi', 'severely_thin', 'moderately_thin'],
+           'count':[len(standard_bmii), len(severely_thinn), len(moderately_thinn)]}
+        op3 = pd.DataFrame(op3,columns=['bmi_class','count'])
+        op3['percentage'] = (op3['count']/op3['count'].sum()) * 100
+        fig5 = px.pie(op3, values='percentage', names='bmi_class', title='Different BMI categories of Beneficiaries who belong to below poverty line class')
+        fig5.update_traces(hole=.4, hoverinfo="label+percent+name")
+        fig5.update_layout(transition_duration=500)
+    
+    return fig5
+    
+# Piechart for percentage of beneficiaries in different BMI categories whose annual income falls between 15,000 rs. to 1 lakh rs.    
+@app.callback(
+    Output('orange-bmi', 'figure'),
+    [Input('update-orange-bmi', 'n_intervals'),
+    Input('dropdown-state', 'value'),
+    Input('my-date-picker-range', 'start_date'),
+    Input('my-date-picker-range', 'end_date')])
+def update_figure(n_intervals,selected_state,start_date,end_date): 
+    try:
+        start_date= dt.strptime(start_date, '%Y-%m-%d').date()
+        end_date = dt.strptime(end_date, '%Y-%m-%d').date()
+    except Exception as e:
+        print("{}".format(e))
+    if(selected_state and start_date and end_date):
+        mask = (ben['u_states'] == selected_state) & (ben['bmdate'] >= start_date) & (ben['bmdate'] < end_date)
+        sstandard_bmi = ben[mask][(ben.currentbmi >= 18.25) & (ben.currentbmi <= 25) & (ben.u_ration == "Orange")]
+        sseverely_thin = ben[mask][(ben.currentbmi < 16) & (ben.u_ration == "Orange")]
+        mmoderately_thin = ben[mask][(ben.currentbmi >= 16) & (ben.currentbmi < 18.5) & (ben.u_ration == "Orange")]
+        op4 = {'bmi_class':['standard_bmi', 'severely_thin', 'moderately_thin'],
+           'count':[len(sstandard_bmi), len(sseverely_thin), len(mmoderately_thin)]}
+        op4 = pd.DataFrame(op4,columns=['bmi_class','count'])
+        op4['percentage'] = (op4['count']/op4['count'].sum()) * 100
+        fig6 = px.pie(op4,  values="percentage",names="bmi_class", title='Beneficiary- BMI categories v/s annual income between Rs.15K to Rs.1 lakh')
+        fig6.update_traces(hole=.4, hoverinfo="label+percent+name")
+        fig6.update_layout(transition_duration=500)
+        
+    elif(selected_state):
+        mask=(ben['u_states'] == selected_state)
+        sstandard_bmi = ben[mask][(ben.currentbmi >= 18.25) & (ben.currentbmi <= 25) & (ben.u_ration == "Orange")]
+        sseverely_thin = ben[mask][(ben.currentbmi < 16) & (ben.u_ration == "Orange")]
+        mmoderately_thin = ben[mask][(ben.currentbmi >= 16) & (ben.currentbmi < 18.5) & (ben.u_ration == "Orange")]
+        op4 = {'bmi_class':['standard_bmi', 'severely_thin', 'moderately_thin'],
+           'count':[len(sstandard_bmi), len(sseverely_thin), len(mmoderately_thin)]}
+        op4 = pd.DataFrame(op4,columns=['bmi_class','count'])
+        op4['percentage'] = (op4['count']/op4['count'].sum()) * 100
+        fig6 = px.pie(op4,  values="percentage",names="bmi_class", title='Beneficiary- BMI categories v/s annual income between Rs.15K to Rs.1 lakh')
+        fig6.update_traces(hole=.4, hoverinfo="label+percent+name")
+        fig6.update_layout(transition_duration=500)
+    elif(start_date and end_date):
+        mask = (ben['bmdate'] >= start_date) & (ben['bmdate'] < end_date)
+        sstandard_bmi = ben[mask][(ben.currentbmi >= 18.25) & (ben.currentbmi <= 25) & (ben.u_ration == "Orange")]
+        sseverely_thin = ben[mask][(ben.currentbmi < 16) & (ben.u_ration == "Orange")]
+        mmoderately_thin = ben[mask][(ben.currentbmi >= 16) & (ben.currentbmi < 18.5) & (ben.u_ration == "Orange")]
+        op4 = {'bmi_class':['standard_bmi', 'severely_thin', 'moderately_thin'],
+           'count':[len(sstandard_bmi), len(sseverely_thin), len(mmoderately_thin)]}
+        op4 = pd.DataFrame(op4,columns=['bmi_class','count'])
+        op4['percentage'] = (op4['count']/op4['count'].sum()) * 100
+        fig6 = px.pie(op4,  values="percentage",names="bmi_class", title='Beneficiary- BMI categories v/s annual income between Rs.15K to Rs.1 lakh')
+        fig6.update_traces(hole=.4, hoverinfo="label+percent+name")
+        fig6.update_layout(transition_duration=500)
+    else:
+        sstandard_bmi = ben[(ben.currentbmi >= 18.25) & (ben.currentbmi <= 25) & (ben.u_ration == "Orange")]
+        sseverely_thin = ben[(ben.currentbmi < 16) & (ben.u_ration == "Orange")]
+        mmoderately_thin = ben[(ben.currentbmi >= 16) & (ben.currentbmi < 18.5) & (ben.u_ration == "Orange")]
+        op4 = {'bmi_class':['standard_bmi', 'severely_thin', 'moderately_thin'],
+           'count':[len(sstandard_bmi), len(sseverely_thin), len(mmoderately_thin)]}
+        op4 = pd.DataFrame(op4,columns=['bmi_class','count'])
+        op4['percentage'] = (op4['count']/op4['count'].sum()) * 100
+        fig6 = px.pie(op4,  values="percentage",names="bmi_class", title='Beneficiary- BMI categories v/s annual income between Rs.15K to Rs.1 lakh')
+        fig6.update_traces(hole=.4, hoverinfo="label+percent+name")
+        fig6.update_layout(transition_duration=500)
+    return fig6
+     
+    
+#Piechart for percentage of beneficiaries in different BMI categories whose annual income is above 1 lakh rs.    
+@app.callback(
+    Output('white-bmi', 'figure'),
+    [Input('update-white-bmi', 'n_intervals'),
+    Input('dropdown-state', 'value'),
+    Input('my-date-picker-range', 'start_date'),
+    Input('my-date-picker-range', 'end_date')])
+def update_figure(n_intervals,selected_state,start_date,end_date): 
+    try:
+        start_date= dt.strptime(start_date, '%Y-%m-%d').date()
+        end_date = dt.strptime(end_date, '%Y-%m-%d').date()
+    except Exception as e:
+        print("{}".format(e))
+    if(selected_state and start_date and end_date):
+        mask = (ben['u_states'] == selected_state) & (ben['bmdate'] >= start_date) & (ben['bmdate'] < end_date)
+        sstandard_bmii = ben[mask][(ben.currentbmi >= 18.25) & (ben.currentbmi <= 25) & (ben.u_ration == "White")]
+        sseverely_thinn = ben[mask][(ben.currentbmi < 16) & (ben.u_ration == "White")]
+        mmoderately_thinn = ben[mask][(ben.currentbmi >= 16) & (ben.currentbmi < 18.5) & (ben.u_ration == "White")]
+        op5 = {'bmi_class':['standard_bmi', 'severely_thin', 'moderately_thin'],
+           'count':[len(sstandard_bmii), len(sseverely_thinn), len(mmoderately_thinn)]}
+        op5 = pd.DataFrame(op5,columns=['bmi_class','count'])
+        op5['percentage'] = (op5['count']/op5['count'].sum()) * 100
+        fig7 = px.pie(op5,  values="percentage",names="bmi_class", title='Beneficiary- BMI categories v/s annual income above Rs.1 lakh')
+        fig7.update_traces(hole=.4, hoverinfo="label+percent+name")
+        fig7.update_layout(transition_duration=500)
+        
+    elif(selected_state):
+        mask=(ben['u_states'] == selected_state)
+        sstandard_bmii = ben[mask][(ben.currentbmi >= 18.25) & (ben.currentbmi <= 25) & (ben.u_ration == "White")]
+        sseverely_thinn = ben[mask][(ben.currentbmi < 16) & (ben.u_ration == "White")]
+        mmoderately_thinn = ben[mask][(ben.currentbmi >= 16) & (ben.currentbmi < 18.5) & (ben.u_ration == "White")]
+        op5 = {'bmi_class':['standard_bmi', 'severely_thin', 'moderately_thin'],
+           'count':[len(sstandard_bmii), len(sseverely_thinn), len(mmoderately_thinn)]}
+        op5 = pd.DataFrame(op5,columns=['bmi_class','count'])
+        op5['percentage'] = (op5['count']/op5['count'].sum()) * 100
+        fig7 = px.pie(op5,  values="percentage",names="bmi_class", title='Beneficiary- BMI categories v/s annual income above Rs.1 lakh')
+        fig7.update_traces(hole=.4, hoverinfo="label+percent+name")
+        fig7.update_layout(transition_duration=500)
+    elif(start_date and end_date):
+        mask = (ben['bmdate'] >= start_date) & (ben['bmdate'] < end_date)
+        sstandard_bmii = ben[mask][(ben.currentbmi >= 18.25) & (ben.currentbmi <= 25) & (ben.u_ration == "White")]
+        sseverely_thinn = ben[mask][(ben.currentbmi < 16) & (ben.u_ration == "White")]
+        mmoderately_thinn = ben[mask][(ben.currentbmi >= 16) & (ben.currentbmi < 18.5) & (ben.u_ration == "White")]
+        op5 = {'bmi_class':['standard_bmi', 'severely_thin', 'moderately_thin'],
+           'count':[len(sstandard_bmii), len(sseverely_thinn), len(mmoderately_thinn)]}
+        op5 = pd.DataFrame(op5,columns=['bmi_class','count'])
+        op5['percentage'] = (op5['count']/op5['count'].sum()) * 100
+        fig7 = px.pie(op5,  values="percentage",names="bmi_class", title='Beneficiary- BMI categories v/s annual income above Rs.1 lakh')
+        fig7.update_traces(hole=.4, hoverinfo="label+percent+name")
+        fig7.update_layout(transition_duration=500)
+    else:
+        sstandard_bmii = ben[(ben.currentbmi >= 18.25) & (ben.currentbmi <= 25) & (ben.u_ration == "White")]
+        sseverely_thinn = ben[(ben.currentbmi < 16) & (ben.u_ration == "White")]
+        mmoderately_thinn = ben[(ben.currentbmi >= 16) & (ben.currentbmi < 18.5) & (ben.u_ration == "White")]
+        op5 = {'bmi_class':['standard_bmi', 'severely_thin', 'moderately_thin'],
+           'count':[len(sstandard_bmii), len(sseverely_thinn), len(mmoderately_thinn)]}
+        op5 = pd.DataFrame(op5,columns=['bmi_class','count'])
+        op5['percentage'] = (op5['count']/op5['count'].sum()) * 100
+        fig7 = px.pie(op5,  values="percentage",names="bmi_class", title='Beneficiary- BMI categories v/s annual income above Rs.1 lakh')
+        fig7.update_traces(hole=.4, hoverinfo="label+percent+name")
+        fig7.update_layout(transition_duration=500)
+    return fig7   
+
 
 
 # For percentage of women in different BMI categories
@@ -239,18 +627,64 @@ def update_figure(n_intervals,selected_state,start_date,end_date):
     Input('my-date-picker-range', 'start_date'),
     Input('my-date-picker-range', 'end_date')])
 def update_figure(n_intervals,selected_state,start_date,end_date):
-    standard_bmi = df[(df.bmi >= 18.25) & (df.bmi <= 25) & (df.age >= 18)]
-    severely_thin = df[(df.bmi < 16) & (df.age >= 18)]
-    moderately_thin = df[(df.bmi >= 16) & (df.bmi < 18.5) & (df.age >= 18)]
-    overweight = df[(df.bmi > 25) & (df.age >= 18)]
-    df1 = {'bmi_class':['standard_bmi', 'severely_thin', 'moderately_thin', 'overweight'],
-       'count':[len(standard_bmi), len(severely_thin), len(moderately_thin), len(overweight)]}
-    df1 = pd.DataFrame(df1,columns=['bmi_class','count'])
-    df1['percentage'] = (df1['count']/df1['count'].sum()) * 100
-    fig4 = px.pie(df1, values='percentage', names='bmi_class', title='Percentage of Women in different BMI Categories')
-    fig4.update_traces(hole=.4, hoverinfo="label+percent+name")
-    fig4.update_layout(transition_duration=500)
-    return fig4
+    try:
+        start_date= dt.strptime(start_date, '%Y-%m-%d').date()
+        end_date = dt.strptime(end_date, '%Y-%m-%d').date()
+    except Exception as e:
+        print("{}".format(e))
+    if(selected_state and start_date and end_date):
+        mask = (ben['u_states'] == selected_state) & (ben['bmdate'] >= start_date) & (ben['bmdate'] < end_date)
+        standard_bmi = ben[mask][(ben.currentbmi >= 18.25) & (ben.currentbmi <= 25) & (ben.u_type == 1)]
+        severely_thin = ben[mask][(ben.currentbmi < 16) & (ben.u_type == 1)]
+        moderately_thin = ben[mask][(ben.currentbmi >= 16) & (ben.currentbmi < 18.5) & (ben.u_type == 1)]
+        overweight = ben[(ben.currentbmi > 25) & (ben.u_type == 1)]
+        df1 = {'bmi_class':['standard_bmi', 'severely_thin', 'moderately_thin', 'overweight'],
+           'count':[len(standard_bmi), len(severely_thin), len(moderately_thin), len(overweight)]}
+        df1 = pd.DataFrame(df1,columns=['bmi_class','count'])
+        df1['percentage'] = (df1['count']/df1['count'].sum()) * 100
+        fig8 = px.pie(df1, values='percentage', names='bmi_class', title='Percentage of Women in different BMI Categories')
+        fig8.update_traces(hole=.4, hoverinfo="label+percent+name")
+        fig8.update_layout(transition_duration=500)
+        
+    elif(selected_state):
+        mask=(ben['u_states'] == selected_state)
+        standard_bmi = ben[mask][(ben.currentbmi >= 18.25) & (ben.currentbmi <= 25) & (ben.u_type == 1)]
+        severely_thin = ben[mask][(ben.currentbmi < 16) & (ben.u_type == 1)]
+        moderately_thin = ben[mask][(ben.currentbmi >= 16) & (ben.currentbmi < 18.5) & (ben.u_type == 1)]
+        overweight = ben[(ben.currentbmi > 25) & (ben.u_type == 1)]
+        df1 = {'bmi_class':['standard_bmi', 'severely_thin', 'moderately_thin', 'overweight'],
+           'count':[len(standard_bmi), len(severely_thin), len(moderately_thin), len(overweight)]}
+        df1 = pd.DataFrame(df1,columns=['bmi_class','count'])
+        df1['percentage'] = (df1['count']/df1['count'].sum()) * 100
+        fig8 = px.pie(df1, values='percentage', names='bmi_class', title='Percentage of Women in different BMI Categories')
+        fig8.update_traces(hole=.4, hoverinfo="label+percent+name")
+        fig8.update_layout(transition_duration=500)
+    elif(start_date and end_date):
+        mask = (ben['bmdate'] >= start_date) & (ben['bmdate'] < end_date)
+        standard_bmi = ben[mask][(ben.currentbmi >= 18.25) & (ben.currentbmi <= 25) & (ben.u_type == 1)]
+        severely_thin = ben[mask][(ben.currentbmi < 16) & (ben.u_type == 1)]
+        moderately_thin = ben[mask][(ben.currentbmi >= 16) & (ben.currentbmi < 18.5) & (ben.u_type == 1)]
+        overweight = ben[(ben.currentbmi > 25) & (ben.u_type == 1)]
+        df1 = {'bmi_class':['standard_bmi', 'severely_thin', 'moderately_thin', 'overweight'],
+           'count':[len(standard_bmi), len(severely_thin), len(moderately_thin), len(overweight)]}
+        df1 = pd.DataFrame(df1,columns=['bmi_class','count'])
+        df1['percentage'] = (df1['count']/df1['count'].sum()) * 100
+        fig8 = px.pie(df1, values='percentage', names='bmi_class', title='Percentage of Women in different BMI Categories')
+        fig8.update_traces(hole=.4, hoverinfo="label+percent+name")
+        fig8.update_layout(transition_duration=500)
+    else:
+        standard_bmi = ben[(ben.currentbmi >= 18.25) & (ben.currentbmi <= 25) & (ben.u_type == 1)]
+        severely_thin = ben[(ben.currentbmi < 16) & (ben.u_type == 1)]
+        moderately_thin = ben[(ben.currentbmi >= 16) & (ben.currentbmi < 18.5) & (ben.u_type == 1)]
+        overweight = ben[(ben.currentbmi > 25) & (ben.u_type == 1)]
+        df1 = {'bmi_class':['standard_bmi', 'severely_thin', 'moderately_thin', 'overweight'],
+           'count':[len(standard_bmi), len(severely_thin), len(moderately_thin), len(overweight)]}
+        df1 = pd.DataFrame(df1,columns=['bmi_class','count'])
+        df1['percentage'] = (df1['count']/df1['count'].sum()) * 100
+        fig8 = px.pie(df1, values='percentage', names='bmi_class', title='Percentage of Women in different BMI Categories')
+        fig8.update_traces(hole=.4, hoverinfo="label+percent+name")
+        fig8.update_layout(transition_duration=500)
+    return fig8
     
 # For percentage of Children (0-3 yrs) in different BMI categories
 @app.callback(
@@ -260,41 +694,68 @@ def update_figure(n_intervals,selected_state,start_date,end_date):
     Input('my-date-picker-range', 'start_date'),
     Input('my-date-picker-range', 'end_date')])
 def update_figure(n_intervals,selected_state,start_date,end_date):
-    standardbmi = df[(df.bmi >= 12) & (df.bmi <= 15) & (df.age <= 3)]
-    severelythin = df[(df.bmi <= 7) & (df.age <= 3)]
-    moderatelythin = df[(df.bmi > 7) & (df.bmi < 12) & (df.age <= 3)]
-    Overweight = df[(df.bmi > 15) & (df.age <= 3)]
-    df2 = {'bmi_class':['standardbmi', 'severelythin', 'moderatelythin', 'Overweight'],
-       'count':[len(standardbmi), len(severelythin), len(moderatelythin), len(Overweight)]}
-    df2 = pd.DataFrame(df2,columns=['bmi_class','count'])
-    df2['percentage'] = (df2['count']/df2['count'].sum()) * 100
-    fig5 = px.pie(df2, values='percentage', names='bmi_class', title='Percentage of Children (0-3 yrs) in different BMI Categories')
-    fig5.update_layout(transition_duration=500)
-    return fig5
+    try:
+        start_date= dt.strptime(start_date, '%Y-%m-%d').date()
+        end_date = dt.strptime(end_date, '%Y-%m-%d').date()
+    except Exception as e:
+        print("{}".format(e))
+    if(selected_state and start_date and end_date):
+        mask = (ben['u_states'] == selected_state) & (ben['bmdate'] >= start_date) & (ben['bmdate'] < end_date)
+        standardbmi = ben[mask][(ben.currentbmi >= 12) & (ben.currentbmi <= 15) & (ben.u_type == 0)]
+        severelythin = ben[mask][(ben.currentbmi <= 7) & (ben.u_type == 0)]
+        moderatelythin = ben[mask][(ben.currentbmi > 7) & (ben.currentbmi < 12) & (ben.u_type == 0)]
+        Overweight = ben[mask][(ben.currentbmi > 15) & (ben.u_type == 0)]
+        df2 = {'bmi_class':['standardbmi', 'severelythin', 'moderatelythin', 'Overweight'],
+           'count':[len(standardbmi), len(severelythin), len(moderatelythin), len(Overweight)]}
+        df2 = pd.DataFrame(df2,columns=['bmi_class','count'])
+        df2['percentage'] = (df2['count']/df2['count'].sum()) * 100
+        fig9 = px.pie(df2, values='percentage', names='bmi_class', title='Percentage of Children in different BMI Categories')
+        fig9.update_traces(hole=.4, hoverinfo="label+percent+name")
+        fig9.update_layout(transition_duration=500)
+        
+    elif(selected_state):
+        mask=(ben['u_states'] == selected_state)
+        standardbmi = ben[mask][(ben.currentbmi >= 12) & (ben.currentbmi <= 15) & (ben.u_type == 0)]
+        severelythin = ben[mask][(ben.currentbmi <= 7) & (ben.u_type == 0)]
+        moderatelythin = ben[mask][(ben.currentbmi > 7) & (ben.currentbmi < 12) & (ben.u_type == 0)]
+        Overweight = ben[mask][(ben.currentbmi > 15) & (ben.u_type == 0)]
+        df2 = {'bmi_class':['standardbmi', 'severelythin', 'moderatelythin', 'Overweight'],
+           'count':[len(standardbmi), len(severelythin), len(moderatelythin), len(Overweight)]}
+        df2 = pd.DataFrame(df2,columns=['bmi_class','count'])
+        df2['percentage'] = (df2['count']/df2['count'].sum()) * 100
+        fig9 = px.pie(df2, values='percentage', names='bmi_class', title='Percentage of Children in different BMI Categories')
+        fig9.update_traces(hole=.4, hoverinfo="label+percent+name")
+        fig9.update_layout(transition_duration=500)
+    elif(start_date and end_date):
+        mask = (ben['bmdate'] >= start_date) & (ben['bmdate'] < end_date)
+        standardbmi = ben[mask][(ben.currentbmi >= 12) & (ben.currentbmi <= 15) & (ben.u_type == 0)]
+        severelythin = ben[mask][(ben.currentbmi <= 7) & (ben.u_type == 0)]
+        moderatelythin = ben[mask][(ben.currentbmi > 7) & (ben.currentbmi < 12) & (ben.u_type == 0)]
+        Overweight = ben[mask][(ben.currentbmi > 15) & (ben.u_type == 0)]
+        df2 = {'bmi_class':['standardbmi', 'severelythin', 'moderatelythin', 'Overweight'],
+           'count':[len(standardbmi), len(severelythin), len(moderatelythin), len(Overweight)]}
+        df2 = pd.DataFrame(df2,columns=['bmi_class','count'])
+        df2['percentage'] = (df2['count']/df2['count'].sum()) * 100
+        fig9 = px.pie(df2, values='percentage', names='bmi_class', title='Percentage of Children in different BMI Categories')
+        fig9.update_traces(hole=.4, hoverinfo="label+percent+name")
+        fig9.update_layout(transition_duration=500)
+    else:
+        standardbmi = ben[(ben.currentbmi >= 12) & (ben.currentbmi <= 15) & (ben.u_type == 0)]
+        severelythin = ben[(ben.currentbmi <= 7) & (ben.u_type == 0)]
+        moderatelythin = ben[(ben.currentbmi > 7) & (ben.currentbmi < 12) & (ben.u_type == 0)]
+        Overweight = ben[(ben.currentbmi > 15) & (ben.u_type == 0)]
+        df2 = {'bmi_class':['standardbmi', 'severelythin', 'moderatelythin', 'Overweight'],
+           'count':[len(standardbmi), len(severelythin), len(moderatelythin), len(Overweight)]}
+        df2 = pd.DataFrame(df2,columns=['bmi_class','count'])
+        df2['percentage'] = (df2['count']/df2['count'].sum()) * 100
+        fig9 = px.pie(df2, values='percentage', names='bmi_class', title='Percentage of Children in different BMI Categories')
+        fig9.update_traces(hole=.4, hoverinfo="label+percent+name")
+        fig9.update_layout(transition_duration=500)
+    return fig9
     
     
-# For percentage of Children (4-6 yrs) in different BMI categories  
-@app.callback(
-    Output('pie-bmi-child2', 'figure'),
-    [Input('update-pie-bmi-child2', 'n_intervals'),
-    Input('dropdown-state', 'value'),
-    Input('my-date-picker-range', 'start_date'),
-    Input('my-date-picker-range', 'end_date')])
-def update_figure(n_intervals,selected_state,start_date,end_date):
-    standardBMI = df[(df.bmi >= 13.5) & (df.bmi <= 16.5) & (df.age > 3) & (df.age <= 6)] # For percentage of Children (4-6 yrs) in different BMI categories
-    SeverelyThin = df[(df.bmi >= 7) & (df.bmi <= 8) & (df.age > 3) & (df.age <= 6)]
-    ModeratelyThin = df[(df.bmi > 8) & (df.bmi < 13.5) & (df.age > 3) & (df.age <= 6)]
-    OverWeight = df[(df.bmi > 16.5) & (df.age > 3) & (df.age <= 6)]
-    df3 = {'bmi_class':['standardBMI', 'SeverelyThin', 'ModeratelyThin', 'OverWeight'],
-       'count':[len(standardBMI), len(SeverelyThin), len(ModeratelyThin), len(OverWeight)]}
-    df3 = pd.DataFrame(df3,columns=['bmi_class','count'])
-    df3['percentage'] = (df3['count']/df3['count'].sum()) * 100
-    fig6 = px.pie(df3, values='percentage', names='bmi_class', title='Percentage of Children (4-6 yrs) in different BMI Categories')
-    fig6.update_layout(transition_duration=500)
-    return fig6
     
-    
-# For comparison of BMI values of women before and after dosage
+# For comparison of BMI values of women before and after dosage(This doesn't use live data since less data for demonstration purpose - Future visualization)
 @app.callback(
     Output('comparison-women', 'figure'),
     [Input('update-comparison-women', 'n_intervals'),
@@ -302,6 +763,12 @@ def update_figure(n_intervals,selected_state,start_date,end_date):
     Input('my-date-picker-range', 'start_date'),
     Input('my-date-picker-range', 'end_date')])
 def update_figure(n_intervals,selected_state,start_date,end_date):
+    try:
+        start_date= dt.strptime(start_date, '%Y-%m-%d').date()
+        end_date = dt.strptime(end_date, '%Y-%m-%d').date()
+    except Exception as e:
+        print("{}".format(e))
+   
     standard_bmi1 = ap[(ap.bmi1 >= 18.25) & (ap.bmi1 <= 25) & (ap.age >= 18)]
     x = len(standard_bmi1)
     severely_thin1 = ap[(ap.bmi1 < 16) & (ap.age >= 18)]
@@ -318,16 +785,16 @@ def update_figure(n_intervals,selected_state,start_date,end_date):
     overweight2 = ap[(ap.bmi2 > 25) & (ap.age >= 18)]
     bmiclass=['standard_bmi', 'severely_thin', 'moderately_thin']
 
-    fig7 = go.Figure(data=[
+    fig10 = go.Figure(data=[
         go.Bar(name='after_1_appt', x=bmiclass, y=[x, y, z]),
         go.Bar(name='after_2_appt', x=bmiclass, y=[x1, y1, z1])
     ])
-    fig7.update_layout(title_text='Comparison of BMI values of women before and after dosage', yaxis_title_text='Count', barmode='group')
-    fig7.update_layout(transition_duration=500)
-    return fig7
+    fig10.update_layout(title_text='Comparison of BMI values of women before and after dosage', yaxis_title_text='Count', barmode='group')
+    fig10.update_layout(transition_duration=500)
+    return fig10
     
 
-# For comparison of BMI values of Children (0-3) before and after dosage
+# For comparison of BMI values of Children before and after dosagev(This doesn't use live data since less data for demonstration purpose - Future visualization)
 @app.callback(
     Output('comparison-child1', 'figure'),
     [Input('update-comparison-child1', 'n_intervals'),
@@ -335,6 +802,12 @@ def update_figure(n_intervals,selected_state,start_date,end_date):
     Input('my-date-picker-range', 'start_date'),
     Input('my-date-picker-range', 'end_date')])
 def update_figure(n_intervals,selected_state,start_date,end_date):
+    try:
+        start_date= dt.strptime(start_date, '%Y-%m-%d').date()
+        end_date = dt.strptime(end_date, '%Y-%m-%d').date()
+    except Exception as e:
+        print("{}".format(e))
+    
     standardbmi1 = ap[(ap.bmi1 >= 12) & (ap.bmi1 <= 15) & (ap.age <= 3)]
     g = len(standardbmi1)
     severelythin1 = ap[(ap.bmi1 <= 7) & (ap.age <= 3)]
@@ -349,175 +822,15 @@ def update_figure(n_intervals,selected_state,start_date,end_date):
     J = len(moderatelythin2)
     bmiclass=['standard_bmi', 'severely_thin', 'moderately_thin']
 
-    fig8 = go.Figure(data=[
+    fig11 = go.Figure(data=[
         go.Bar(name='after_1_appt', x=bmiclass, y=[g, h, j]),
         go.Bar(name='after_2_appt', x=bmiclass, y=[G, H, J])
     ])
-    fig8.update_layout(title_text='Comparison of BMI values of Children (0-3) before and after dosage', yaxis_title_text='Count', barmode='group')
-    fig8.update_layout(transition_duration=500)
-    return fig8
-    
-    
-    
-    
-# For comparison of BMI values of Children (4-6) before and after dosage
-@app.callback(
-    Output('comparison-child2', 'figure'),
-    [Input('update-comparison-child2', 'n_intervals'),
-    Input('dropdown-state', 'value'),
-    Input('my-date-picker-range', 'start_date'),
-    Input('my-date-picker-range', 'end_date')])
-def update_figure(n_intervals,selected_state,start_date,end_date):
-    standardBMI1 = ap[(ap.bmi1 >= 13.5) & (ap.bmi1 <= 16.5) & (ap.age > 3) & (ap.age <= 6)]
-    b = len(standardBMI1)
-    SeverelyThin1 = ap[(ap.bmi1 >= 7) & (ap.bmi1 <= 8) & (ap.age > 3) & (ap.age <= 6)]
-    n = len(SeverelyThin1)
-    ModeratelyThin1 = ap[(ap.bmi1 > 8) & (ap.bmi1 < 13.5) & (ap.age > 3) & (ap.age <= 6)]
-    m = len(ModeratelyThin1)
-    standardBMI2 = ap[(ap.bmi2 >= 13.5) & (ap.bmi2 <= 16.5) & (ap.age > 3) & (ap.age <= 6)]
-    B = len(standardBMI2)
-    SeverelyThin2 = ap[(ap.bmi2 >= 7) & (ap.bmi2 <= 8) & (ap.age > 3) & (ap.age <= 6)]
-    N = len(SeverelyThin2)
-    ModeratelyThin2 = ap[(ap.bmi2 > 8) & (ap.bmi2 < 13.5) & (ap.age > 3) & (ap.age <= 6)]
-    M = len(ModeratelyThin2)
-    bmiclass=['standard_bmi', 'severely_thin', 'moderately_thin']
-    
-    fig9 = go.Figure(data=[
-        go.Bar(name='after_1_appt', x=bmiclass, y=[b, n, m]),
-        go.Bar(name='after_2_appt', x=bmiclass, y=[B, N, M])
-    ])
-    fig9.update_layout(title_text='Comparison of BMI values of Children (4-6) before and after dosage', yaxis_title_text='Count', barmode='group')
-    fig9.update_layout(transition_duration=500)
-    return fig9   
-  
-  
-# Pie chart for educaation
-@app.callback(
-    Output('education', 'figure'),
-    [Input('update-education', 'n_intervals'),
-    Input('dropdown-state', 'value'),
-    Input('my-date-picker-range', 'start_date'),
-    Input('my-date-picker-range', 'end_date')])
-def update_figure(n_intervals,selected_state,start_date,end_date):
-    tenth = op[(op.u_edu == '10th pass')]
-    below_tenth = op[(op.u_edu == 'Below 10th')]
-    twelveth = op[(op.u_edu == '12th pass')]
-    grad = op[(op.u_edu == 'Graduate')]
-    op1 = {'edu_class':['10th Pass', '12th Pass', 'Graduate','Below 10th'],
-       'count':[len(tenth), len(twelveth), len(grad),len(below_tenth)]}
-    op1 = pd.DataFrame(op1,columns=['edu_class','count'])
-    op1['percentage'] = (op1['count']/op1['count'].sum()) * 100
-    fig14 = px.pie(op1, values='percentage', names='edu_class', title="Beneficiary's Education background")
-    fig14.update_layout(transition_duration=500)
-    return fig14 
- 
- 
- 
-  
-#Pie chart for percentage of beneficiaries of different financial background
-@app.callback(
-    Output('ration', 'figure'),
-    [Input('update-ration', 'n_intervals'),
-    Input('dropdown-state', 'value'),
-    Input('my-date-picker-range', 'start_date'),
-    Input('my-date-picker-range', 'end_date')])
-def update_figure(n_intervals,selected_state,start_date,end_date):
-  
-    yellow = op[(op.u_ration == 'Yellow')]
-    orange = op[(op.u_ration == 'Orange')]
-    white = op[(op.u_ration == 'White')]
-    op1 = {'ration_class':['Yellow - below poverty line', 'Orange - annual income Rs.15,000 to Rs.1 Lakh', 'White - annual income over Rs.1 Lakh'],
-       'count':[len(yellow), len(orange), len(white)]}
-    op1 = pd.DataFrame(op1,columns=['ration_class','count'])
-    op1['percentage'] = (op1['count']/op1['count'].sum()) * 100
-    fig10 = px.pie(op1, values='percentage', names='ration_class', title="Beneficiary's financial background")
-    fig10.update_layout(transition_duration=500)
-    return fig10
-    
-# Pie chart for percentage of beneficiaries in different BMI categories who belong to below poverty line class
-@app.callback(
-    Output('yellow-bmi', 'figure'),
-    [Input('update-yellow-bmi', 'n_intervals'),
-    Input('dropdown-state', 'value'),
-    Input('my-date-picker-range', 'start_date'),
-    Input('my-date-picker-range', 'end_date')])
-def update_figure(n_intervals,selected_state,start_date,end_date):   
-    
-    standard_bmii = op[(op.currentbmi >= 18.25) & (op.currentbmi <= 25) & (op.u_ration == "Yellow")]
-    severely_thinn = op[(op.currentbmi < 16) & (op.u_ration == "Yellow")]
-    moderately_thinn = op[(op.currentbmi >= 16) & (op.currentbmi < 18.5) & (op.u_ration == "Yellow")]
-    op1 = {'bmi_class':['standard_bmi', 'severely_thin', 'moderately_thin'],
-       'count':[len(standard_bmii), len(severely_thinn), len(moderately_thinn)]}
-    op1 = pd.DataFrame(op1,columns=['bmi_class','count'])
-    op1['percentage'] = (op1['count']/op1['count'].sum()) * 100
-    fig11 = px.pie(op1, values='percentage', names='bmi_class', title='Beneficiaries in different BMI categories who belong to below poverty line class')
+    fig11.update_layout(title_text='Comparison of BMI values of Children before and after dosage', yaxis_title_text='Count', barmode='group')
     fig11.update_layout(transition_duration=500)
     return fig11
     
-# Piechart for percentage of beneficiaries in different BMI categories whose annual income falls between 15,000 rs. to 1 lakh rs.    
-@app.callback(
-    Output('orange-bmi', 'figure'),
-    [Input('update-orange-bmi', 'n_intervals'),
-    Input('dropdown-state', 'value'),
-    Input('my-date-picker-range', 'start_date'),
-    Input('my-date-picker-range', 'end_date')])
-def update_figure(n_intervals,selected_state,start_date,end_date): 
-    sstandard_bmi = op[(op.currentbmi >= 18.25) & (op.currentbmi <= 25) & (op.u_ration == "Orange")]
-    sseverely_thin = op[(op.currentbmi < 16) & (op.u_ration == "Orange")]
-    mmoderately_thin = op[(op.currentbmi >= 16) & (op.currentbmi < 18.5) & (op.u_ration == "Orange")]
-    op1 = {'bmi_class':['standard_bmi', 'severely_thin', 'moderately_thin'],
-       'count':[len(sstandard_bmi), len(sseverely_thin), len(mmoderately_thin)]}
-    op1 = pd.DataFrame(op1,columns=['bmi_class','count'])
-    op1['percentage'] = (op1['count']/op1['count'].sum()) * 100
-    fig12 = px.pie(op1,  values="percentage",names="bmi_class", title='Beneficiary- BMI categories v/s annual income between Rs.15K to Rs.1 lakh')
-    fig12.update_layout(transition_duration=500)
-    return fig12
-     
     
-#Piechart for percentage of beneficiaries in different BMI categories whose annual income is above 1 lakh rs.    
-@app.callback(
-    Output('white-bmi', 'figure'),
-    [Input('update-white-bmi', 'n_intervals'),
-    Input('dropdown-state', 'value'),
-    Input('my-date-picker-range', 'start_date'),
-    Input('my-date-picker-range', 'end_date')])
-def update_figure(n_intervals,selected_state,start_date,end_date): 
-    sstandard_bmii = op[(op.currentbmi >= 18.25) & (op.currentbmi <= 25) & (op.u_ration == "White")]
-    sseverely_thinn = op[(op.currentbmi < 16) & (op.u_ration == "White")]
-    mmoderately_thinn = op[(op.currentbmi >= 16) & (op.currentbmi < 18.5) & (op.u_ration == "White")]
-    op1 = {'bmi_class':['standard_bmi', 'severely_thin', 'moderately_thin'],
-       'count':[len(sstandard_bmii), len(sseverely_thinn), len(mmoderately_thinn)]}
-    op1 = pd.DataFrame(op1,columns=['bmi_class','count'])
-    op1['percentage'] = (op1['count']/op1['count'].sum()) * 100
-    fig13 = px.pie(op1,  values="percentage",names="bmi_class", title='Beneficiary- BMI categories v/s annual income above Rs.1 lakh')
-    fig13.update_layout(transition_duration=500)
-    return fig13   
-    
-
-#Dash Table
-@app.callback(
-    Output('table-multicol-sorting', "data"),
-    [Input('table-multicol-sorting', "page_current"),
-     Input('table-multicol-sorting', "page_size"),
-     Input('table-multicol-sorting', "sort_by")])
-def update_table(page_current, page_size, sort_by):
-    print(sort_by)
-    if len(sort_by):
-        dff = ben_bmi.sort_values(
-            [col['column_id'] for col in sort_by],
-            ascending=[
-                col['direction'] == 'asc'
-                for col in sort_by
-            ],
-            inplace=False
-        )
-    else:
-        # No sort is applied
-        dff = ben_bmi
-
-    return dff.iloc[
-        page_current*page_size:(page_current+ 1)*page_size
-    ].to_dict('records')
         
 #########################################################################################################    
 

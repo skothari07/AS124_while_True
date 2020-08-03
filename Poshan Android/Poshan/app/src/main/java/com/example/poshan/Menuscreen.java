@@ -19,7 +19,6 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import java.util.Locale;
 
-
 public class Menuscreen extends AppCompatActivity {
     private static int k = -1;
     private static int l = -1;
@@ -27,6 +26,7 @@ public class Menuscreen extends AppCompatActivity {
 
     GridView gridView;
     String[] menuNames = {"Profile", "General Info", "Help", "Notifications"};
+    int[] menuNames1 = {R.string.menuitem1, R.string.menuitem2, R.string.menuitem3,R.string.menuitem4};
     int[] menuImages = {R.drawable.profile, R.drawable.faq, R.drawable.help, R.drawable.notification};
 
     @Override
@@ -162,8 +162,7 @@ public class Menuscreen extends AppCompatActivity {
             View view1 = getLayoutInflater().inflate(R.layout.row_data, null);
             TextView name = view1.findViewById(R.id.item_name);
             ImageView image = view1.findViewById(R.id.images);
-
-            name.setText(menuNames[i]);
+            name.setText(menuNames1[i]);
             image.setImageResource(menuImages[i]);
             return view1;
 

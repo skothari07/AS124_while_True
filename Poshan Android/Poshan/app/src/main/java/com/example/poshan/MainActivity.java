@@ -88,7 +88,7 @@ public class MainActivity extends AppCompatActivity {
 
                     finish();
 
-                    Intent intent = new Intent(MainActivity.this, Menuscreen.class);
+                    Intent intent = new Intent(MainActivity.this, VerificationActivity.class);
 
                     intent.putExtra("mobile",email);
 

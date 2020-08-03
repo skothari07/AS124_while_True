@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BMI Display</title>
+        <link href='https://fonts.googleapis.com/css?family=Lobster|Open+Sans+Condensed:300,700' rel='stylesheet' type='text/css'>
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+        <style>
+            *{
+                margin: 0;
+                padding: 0;
+            }
+            body{
+                background: white;
+            }
+            .wrapper{
+                margin-left: 150px;
+                margin-top: 50px;
+            }
+            .main-card{
+                width: 700px;
+                height: 380px;
+                background: #142C5C;
+                padding-bottom: 20px;
+                padding-left: 20px;
+                color: #fff;
+                -webkit-box-shadow: 10px 13px 13px -7px rgba(0,0,0,0.75);
+                -moz-box-shadow: 10px 13px 13px -7px rgba(0,0,0,0.75);
+                box-shadow: 10px 13px 13px -7px rgba(0,0,0,0.75);
+            }
+            .main-card-text{
+                width: 500px;
+                height: 100%;
+                position: relative;
+                float: left;
+            }
+            .artist-name{
+                font-family: 'Open Sans Condensed';
+                font-weight: 300;
+                font-size: 42px;
+                letter-spacing: 1px;
+                margin-top: 10px;
+                margin-left: 10px;
+            }
+            .social{
+                width: 450px;
+                height: 150px;
+                margin: 0 auto;
+                margin-top: 20px;
+            }
+            .social-section{
+                width: 32%;
+                height: 100%;
+                display: inline-block;
+                text-align: center;
+            }
+            .social-section:nth-child(1),
+            .social-section:nth-child(2){
+                border-right: 1px solid white;
+            }
+            .social-numb{
+                font-family: 'Lobster';
+                font-size: 38px;
+                margin-top: 25px;
+            }
+            .social-text{
+                font-family: 'Open Sans Condensed';
+                font-size: 20px;
+                margin-top: 10px;
+            }
+            .about{
+                position: absolute;
+                left: 0;
+                bottom: 0;
+            }
+            .about-header,
+            .about-text{
+                font-family: 'Open Sans Condensed';
+                font-size: 24px;
+                font-weight: 300;
+            }
+            .about-header{
+              font-weight: 700;
+            }
+            .about-text{
+                font-size: 18px;
+            }
+           
+        </style>
+      </head>
+      
+      <body>
+      
+          <div class="wrapper">
+              <div class="main-card">
+                  <div class="main-card-text">
+                      <h1 class="artist-name">USERID : {{vals.id}}</h1>
+                      <div class="social">
+                          <div class="social-section">
+                              <p class="social-numb">{{vals.height}}</p>
+                              <p class="social-text">Height</p>
+                          </div>
+                          <div class="social-section">
+                              <p class="social-numb">{{vals.weight}}</p>
+                              <p class="social-text">Weight</p>
+                          </div>
+                          <div class="social-section">
+                              <p class="social-numb">{{vals.currentbmi}}</p>
+                              <p class="social-text">BMI</p>
+                          </div>
+                      </div>
+                      <div class="about">
+                          <h3 class="about-header">ABOUT</h3>
+                        
+                          <p class="about-text">The chief minister inaugurates Poshan Abhiyan, a government mission to ensure the nutrition of children, women, and pregnant mothers in impoverished areas. </p>
+                          <button type="button" class="btn btn-primary btn-lg"><a href="{% url 'timelinegen' %}" style="color: white;">Done</a></button>
+                      </div>
+                  </div>
+
+              </div>
+       
+
+          </div>
+          <div class="img-loc"><div class="img-card"></div></div>
+          <button>
+              
+          </button>
+</body>
+</html>

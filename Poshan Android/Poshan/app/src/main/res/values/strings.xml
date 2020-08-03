@@ -1,5 +1,11 @@
 <resources>
-    <string name="app_name">Poshan</string>
+    <string name="app_name" >Poshan</string>
+    <string name="menuitem1" >Profile</string>
+    <string name="menuitem2" >General Info</string>
+    <string name="menuitem3" >Help</string>
+    <string name="menuitem4" >Notifications</string>
+
+
     <string-array name="faqquestions">
         <item>What is Malnutrition?</item>
         <item>Is malnutrition a disease?</item>

@@ -1,6 +1,15 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Poshan</string>
+    <string name="menuitem1" >
+        प्रोफाइल
+</string>
+    <string name="menuitem2" >
+सामान्य माहिती
+</string>
+    <string name="menuitem3" >
+मदत</string>
+    <string name="menuitem4" >अधिसूचना</string>
     <string-array name="faqquestions">
         <item>कुपोषण म्हणजे काय?</item>
         <item>कुपोषण हा आजार आहे का?</item>

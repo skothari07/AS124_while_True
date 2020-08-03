@@ -17,15 +17,15 @@ import java.net.URL;
 
 public class NotificationsActivity extends AppCompatActivity {
     ListView listView;
-    String cat_name="";
+    String mob_no="";
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_notifications);
         Intent intent = getIntent();
-        cat_name = intent.getStringExtra("mobile");
+        mob_no = intent.getStringExtra("mobile");
         listView = findViewById(R.id.listView);
-        getJSON("https://mysih2020task.000webhostapp.com/mytest/getdata.php?mob_no="+cat_name);
+        getJSON("https://mysih2020task.000webhostapp.com/mytest/getdata.php?mob_no="+mob_no);
 
     }
 
